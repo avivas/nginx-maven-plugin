@@ -9,8 +9,30 @@
 
 	<name>nginx-maven-plugin Maven Plugin</name>
 
-	<!-- FIXME change it to the project's website -->
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/avivas/nginx-maven-plugin</url>
+
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/avivas/nginx-maven-plugin/issues/</url>
+	</issueManagement>
+
+	<developers>
+		<developer>
+			<id>avivas</id>
+			<name>Alejandro Vivas</name>
+			<roles>
+				<role>Plugin Developer</role>
+			</roles>
+			<timezone>-5:00</timezone>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:https://github.com/avivas/nginx-maven-plugin.git</connection>
+		<developerConnection>scm:git:ssh://git@/github.com/avivas/nginx-maven-plugin.git</developerConnection>
+		<url>https://github.com/avivas/nginx-maven-plugin</url>
+		<tag>HEAD</tag>
+	</scm>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -30,7 +52,6 @@
 			<artifactId>maven-plugin-api</artifactId>
 			<version>2.0</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.maven/maven-project -->
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-project</artifactId>
@@ -60,10 +81,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-plugin-plugin</artifactId>
-				<version>3.2</version>
+				<version>3.5</version>
 				<configuration>
 					<goalPrefix>nginx-maven-plugin</goalPrefix>
-					<skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+					<skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>					
 				</configuration>
 				<executions>
 					<execution>
@@ -110,11 +131,48 @@
 					<licenseName>apache_v2</licenseName>
 					<organizationName>Bachue</organizationName>
 					<inceptionYear>2017</inceptionYear>
-					<addSvnKeyWords>false</addSvnKeyWords>					
+					<addSvnKeyWords>false</addSvnKeyWords>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-plugin-plugin</artifactId>
+				<version>2.5.1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<minmemory>128m</minmemory>
+					<maxmemory>512</maxmemory>
+					<tags>
+						<tag>
+							<name>goal</name>
+							<placement>t</placement>
+							<head>Maven goal</head>
+						</tag>
+						<tag>
+							<name>phase</name>
+							<placement>t</placement>
+							<head>Maven phase</head>
+						</tag>
+					</tags>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<version>2.1</version>
+			</plugin>
+		</plugins>
+	</reporting>
+
 	<profiles>
 		<profile>
 			<id>run-its</id>

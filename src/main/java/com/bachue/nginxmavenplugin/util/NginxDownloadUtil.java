@@ -138,6 +138,7 @@ public final class NginxDownloadUtil
 	 * @param localRepository Object to get repository
 	 * @param version Nginx version
 	 * @param logger maven logger
+	 * @param disableValidationCertificates Disable validation certificates
 	 * @return Object with status to install
 	 */
 	public static NginxInstall install(final ArtifactRepository localRepository,final String version,boolean disableValidationCertificates,final Log logger)

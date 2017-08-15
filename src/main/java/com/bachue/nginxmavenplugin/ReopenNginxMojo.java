@@ -24,12 +24,14 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
 /**
- * Mojo to reopen Nginx
+ * Send reopen signal to Nginx
  * @author Alejandro Vivas
  * @version 14/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
+ * @goal reopen
+ * @phase NONE 
  */
-@Mojo(name = "reopen", defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST)
+@Mojo(name = "reopen", defaultPhase = LifecyclePhase.NONE)
 public class ReopenNginxMojo extends  BaseNginxMojo
 {
 	@Override

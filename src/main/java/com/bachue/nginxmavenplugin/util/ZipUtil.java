@@ -40,8 +40,12 @@ public class ZipUtil
 	/**
 	 * Unzip a zip file
 	 * @param pathZipFile path to zip file
-	 * @param output Output folder to unzip
-	 * @throws IOException
+	 * @param outputFolder Output folder to unzip
+	 * @param logger Maven logger
+	 * @throws IOException If fail to unzip a file
+	 * @author Alejandro Vivas
+	 * @version 15/08/2017 0.0.1-SNAPSHOT
+	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 */
 	public static void unzip(String pathZipFile, String outputFolder, final Log logger) throws IOException
 	{

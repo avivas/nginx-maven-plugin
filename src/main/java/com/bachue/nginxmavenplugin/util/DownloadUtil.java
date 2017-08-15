@@ -51,6 +51,7 @@ public class DownloadUtil
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 * @param fileName Path to download
 	 * @param fileUrl Url path
+	 * @param disableValidationCertificates True if disable validation certificates, false otherwise
 	 * @throws MalformedURLException If invalid url
 	 * @throws IOException If IO error
 	 * @throws KeyManagementException If fail to disable validation certificates

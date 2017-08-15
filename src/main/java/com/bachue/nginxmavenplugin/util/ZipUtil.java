@@ -20,6 +20,9 @@ package com.bachue.nginxmavenplugin.util;
  * #L%
  */
 
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -27,6 +30,9 @@ import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.maven.plugin.logging.Log;
 
 /**
@@ -49,7 +55,7 @@ public class ZipUtil
 	 */
 	public static void unzip(String pathZipFile, String outputFolder, final Log logger) throws IOException
 	{
-		logger.info("Starting to unzip:[" + pathZipFile + "]");
+		logger.info("Starting to uncompress:[" + pathZipFile + "]");
 
 		byte[] buffer = new byte[1024];
 		// Create output folder is not exists
@@ -77,6 +83,7 @@ public class ZipUtil
 				FileOutputStream fileOutputStream = null;
 				try
 				{
+					logger.info("Uncompress: " + newFile.getAbsolutePath());
 					fileOutputStream = new FileOutputStream(newFile);
 					int length;
 					while ((length = zipInputStream.read(buffer)) > 0)
@@ -98,6 +105,90 @@ public class ZipUtil
 		zipInputStream.closeEntry();
 		zipInputStream.close();
 
-		logger.info("Finish to unzip:[" + pathZipFile + "]");
+		logger.info("Finish to uncompress:[" + pathZipFile + "]");
+	}
+
+	/**
+	 * Uncompress a tar.gz file in a folder
+	 * @author Alejandro Vivas
+	 * @version 15/08/2017 0.0.1-SNAPSHOT
+	 * @since 15/08/2017 0.0.1-SNAPSHOT
+	 * @param pathTarGz File to uncompress
+	 * @param pathOutputFolder Output folder
+	 * @param logger Maven logger
+	 * @throws IOException If fail uncompress
+	 */
+	public static void untargz(String pathTarGz, String pathOutputFolder, final Log logger) throws IOException
+	{
+		logger.info("Starting to uncompress:[" + pathTarGz + "]");
+
+		File tarGzFile = new File(pathTarGz);
+		File outputFolder = new File(pathOutputFolder);
+		outputFolder.mkdir();
+
+		TarArchiveInputStream tarArchiveInputStream = null;
+		try
+		{
+			tarArchiveInputStream = new TarArchiveInputStream(new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(tarGzFile))));
+			TarArchiveEntry tarArchiveEntry = tarArchiveInputStream.getNextTarEntry();
+			byte[] buffer = new byte[1024];
+			while (tarArchiveEntry != null)
+			{
+				File outputFile = new File(outputFolder, tarArchiveEntry.getName());
+				logger.info("Uncompress: " + outputFile.getCanonicalPath());
+				if (tarArchiveEntry.isDirectory())
+				{
+					outputFile.mkdirs();
+				}
+				else
+				{
+					new File(outputFile.getParent()).mkdirs();
+					outputFile.createNewFile();
+
+					BufferedOutputStream bufferedOutputStream = null;
+					try
+					{
+						bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
+						int length = 0;
+						while ((length = tarArchiveInputStream.read(buffer)) != -1)
+						{
+							bufferedOutputStream.write(buffer, 0, length);
+						}
+
+					}
+					finally
+					{
+						if (bufferedOutputStream != null)
+						{
+							try
+							{
+								bufferedOutputStream.close();
+							}
+							catch (IOException e)
+							{
+								throw e;
+							}
+						}
+					}
+				}
+				tarArchiveEntry = tarArchiveInputStream.getNextTarEntry();
+			}
+		}
+		finally
+		{
+			if (tarArchiveInputStream != null)
+			{
+				try
+				{
+					tarArchiveInputStream.close();
+				}
+				catch (IOException e)
+				{
+					throw e;
+				}
+			}
+		}
+
+		logger.info("Finish to uncompress:[" + pathTarGz + "]");
 	}
 }

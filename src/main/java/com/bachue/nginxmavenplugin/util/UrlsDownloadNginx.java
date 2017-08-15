@@ -34,22 +34,31 @@ import com.bachue.nginxmavenplugin.util.OS.TypeOs;
 public class UrlsDownloadNginx
 {
 	/** Map to get Urls by TypeOs and version */
-	private static final Map<TypeOs, Map<String,String>> osToVersion = new TreeMap<TypeOs, Map<String,String>>();
-	
+	private static final Map<TypeOs, Map<String, String>>	nginxOsToVersion	= new TreeMap<TypeOs, Map<String, String>>();
+
+	/** Map to get Urls by TypeOs and version */
+	private static final Map<String, String>				pcreToVersion		= new TreeMap<String, String>();
+	private static final Map<String, String>				zlibToVersion		= new TreeMap<String, String>();
+	private static final Map<String, String>				opensslToVersion	= new TreeMap<String, String>();
+
 	/** Load Urls */
 	static
 	{
-		osToVersion.put(TypeOs.WIN, new TreeMap<String, String>());
-		osToVersion.get(TypeOs.WIN).put("1.12.1", "https://nginx.org/download/nginx-1.12.1.zip");
-		osToVersion.get(TypeOs.WIN).put("1.13.4", "https://nginx.org/download/nginx-1.13.4.zip");
-		osToVersion.get(TypeOs.WIN).put("latest", "https://nginx.org/download/nginx-1.13.4.zip");
-		
-		osToVersion.put(TypeOs.UNIX, new TreeMap<String, String>());
-		osToVersion.get(TypeOs.UNIX).put("1.12.1", "https://nginx.org/download/nginx-1.12.1.tar.gz");
-		osToVersion.get(TypeOs.UNIX).put("1.13.4", "https://nginx.org/download/nginx-1.13.4.tar.gz");
-		osToVersion.get(TypeOs.UNIX).put("latest", "https://nginx.org/download/nginx-1.13.4.tar.gz");
+		nginxOsToVersion.put(TypeOs.WIN, new TreeMap<String, String>());
+		nginxOsToVersion.get(TypeOs.WIN).put("1.12.1", "https://nginx.org/download/nginx-1.12.1.zip");
+		nginxOsToVersion.get(TypeOs.WIN).put("1.13.4", "https://nginx.org/download/nginx-1.13.4.zip");
+		nginxOsToVersion.get(TypeOs.WIN).put("latest", "https://nginx.org/download/nginx-1.13.4.zip");
+
+		nginxOsToVersion.put(TypeOs.UNIX, new TreeMap<String, String>());
+		nginxOsToVersion.get(TypeOs.UNIX).put("1.12.1", "https://nginx.org/download/nginx-1.12.1.tar.gz");
+		nginxOsToVersion.get(TypeOs.UNIX).put("1.13.4", "https://nginx.org/download/nginx-1.13.4.tar.gz");
+		nginxOsToVersion.get(TypeOs.UNIX).put("latest", "https://nginx.org/download/nginx-1.13.4.tar.gz");
+
+		pcreToVersion.put("1.13.4", "https://ftp.pcre.org/pub/pcre/pcre-8.41.tar.gz");
+		zlibToVersion.put("1.13.4", "http://zlib.net/zlib-1.2.11.tar.gz");
+		opensslToVersion.put("1.13.4", "https://www.openssl.org/source/openssl-1.0.2k.tar.gz");
 	}
-	
+
 	/**
 	 * Return a URL by OS and version
 	 * @author Alejandro Vivas
@@ -60,22 +69,79 @@ public class UrlsDownloadNginx
 	 * @return URL to download
 	 * @throws NginxDownloadNotFoundException If URL not found
 	 */
-	public static String url(OS os,String version) throws NginxDownloadNotFoundException
-	{	
-		Map<String,String> mapVersionUrl  = osToVersion.get(os.getTypeOs());
-		if(mapVersionUrl == null)
+	public static String urlNginx(OS os, String version) throws NginxDownloadNotFoundException
+	{
+		Map<String, String> mapVersionUrl = nginxOsToVersion.get(os.getTypeOs());
+		if (mapVersionUrl == null)
 		{
 			throw new NginxDownloadNotFoundException("Operative system:" + os.getName() + " no supported");
 		}
 		String url = mapVersionUrl.get(version);
-		if(url == null)
+		if (url == null)
 		{
-			throw new NginxDownloadNotFoundException("Nginx version:" +version + " no supported");
+			throw new NginxDownloadNotFoundException("Nginx version:" + version + " no supported");
 		}
-		
+
 		return url;
 	}
-	
+
+	/**
+	 * 
+	 * @author Alejandro Vivas
+	 * @version 15/08/2017 0.0.1-SNAPSHOT
+	 * @since 15/08/2017 0.0.1-SNAPSHOT
+	 * @param version
+	 * @return
+	 * @throws NginxDownloadNotFoundException
+	 */
+	public static String urlPcre(String version) throws NginxDownloadNotFoundException
+	{
+		String url = pcreToVersion.get(version);
+		if (url == null)
+		{
+			throw new NginxDownloadNotFoundException("Pcre->nginx version:" + version + " no supported");
+		}
+		return url;
+	}
+
+	/**
+	 * 
+	 * @author Alejandro Vivas
+	 * @version 15/08/2017 0.0.1-SNAPSHOT
+	 * @since 15/08/2017 0.0.1-SNAPSHOT
+	 * @param version
+	 * @return
+	 * @throws NginxDownloadNotFoundException
+	 */
+	public static String urlZlib(String version) throws NginxDownloadNotFoundException
+	{
+		String url = zlibToVersion.get(version);
+		if (url == null)
+		{
+			throw new NginxDownloadNotFoundException("Zlib->nginx version:" + version + " no supported");
+		}
+		return url;
+	}
+
+	/**
+	 * Return a URL to download 
+	 * @author Alejandro Vivas
+	 * @version 15/08/2017 0.0.1-SNAPSHOT
+	 * @since 15/08/2017 0.0.1-SNAPSHOT
+	 * @param version
+	 * @return
+	 * @throws NginxDownloadNotFoundException
+	 */
+	public static String urlOpenssl(String version) throws NginxDownloadNotFoundException
+	{
+		String url = opensslToVersion.get(version);
+		if (url == null)
+		{
+			throw new NginxDownloadNotFoundException("Openssl->nginx version:" + version + " no supported");
+		}
+		return url;
+	}
+
 	/**
 	 * Get latest URL version
 	 * @author Alejandro Vivas

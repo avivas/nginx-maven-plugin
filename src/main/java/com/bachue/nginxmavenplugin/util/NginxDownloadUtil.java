@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.logging.Log;
@@ -138,7 +140,7 @@ public final class NginxDownloadUtil
 	 * @param logger maven logger
 	 * @return Object with status to install
 	 */
-	public static NginxInstall install(final ArtifactRepository localRepository,final String version,final Log logger)
+	public static NginxInstall install(final ArtifactRepository localRepository,final String version,boolean disableValidationCertificates,final Log logger)
 	{
 		try
 		{
@@ -176,22 +178,22 @@ public final class NginxDownloadUtil
 			if( !new File(zipPath).exists() )
 			{
 				logger.info("Download:[" + downloadNginxUrl + "] to [" + zipPath +"]");
-				DownloadUtil.dowloadFile(zipPath, downloadNginxUrl);
+				DownloadUtil.dowloadFile(zipPath, downloadNginxUrl,disableValidationCertificates);
 			}
 			
 			if(currentOs.getTypeOs().equals(TypeOs.UNIX))
 			{
 				String downloadUrlPcre = "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.41.tar.gz";
 				logger.info("Download:[" + downloadUrlPcre + "] to :[" + zipPath +"]");
-				DownloadUtil.dowloadFile(zipPath, downloadUrlPcre);
+				DownloadUtil.dowloadFile(zipPath, downloadUrlPcre,disableValidationCertificates);
 				
 				String downloadUrlZlib = "http://zlib.net/zlib-1.2.11.tar.gz";
 				logger.info("Download:[" + downloadUrlZlib + "] to :[" + zipPath +"]");
-				DownloadUtil.dowloadFile(zipPath, downloadUrlZlib);
+				DownloadUtil.dowloadFile(zipPath, downloadUrlZlib,disableValidationCertificates);
 				
 				String downloadUrlOpenssl = "http://www.openssl.org/source/openssl-1.0.2k.tar.gz";
 				logger.info("Download:[" + downloadUrlOpenssl + "] to :[" + zipPath +"]");
-				DownloadUtil.dowloadFile(zipPath, downloadUrlOpenssl);
+				DownloadUtil.dowloadFile(zipPath, downloadUrlOpenssl,disableValidationCertificates);
 			}
 			
 			// Verified if unzip (win) files exist 
@@ -220,6 +222,14 @@ public final class NginxDownloadUtil
 			return new NginxInstall(null,null, false, ioException);
 		}
 		catch (NginxDownloadNotFoundException e)
+		{
+			return new NginxInstall(null,null, false, e);
+		}
+		catch (KeyManagementException e)
+		{
+			return new NginxInstall(null,null, false, e);
+		}
+		catch (NoSuchAlgorithmException e)
 		{
 			return new NginxInstall(null,null, false, e);
 		}		

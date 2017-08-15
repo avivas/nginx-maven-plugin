@@ -56,9 +56,13 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	@Parameter(property = "nginxConfigurationFile")
     private String nginxConfigurationFile;
 	
-	/** Nginx pprefix path */
+	/** Nginx prefix path */
 	@Parameter(property = "nginxPrefixPath")
-    private String nginxPrefixPath;	
+    private String nginxPrefixPath;
+	
+	/** Disable validation certificates in https downloads*/
+	@Parameter(property = "disableValidationCertificates", defaultValue = "true")
+	private boolean disableValidationCertificates;
 	
 	/**
 	 * Execute nginx
@@ -69,7 +73,7 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	public void execute() throws MojoExecutionException
 	{
 		// Install nginx
-		NginxInstall nginxInstall = NginxDownloadUtil.install(this.localRepository,getNginxVersion(),getLog());		
+		NginxInstall nginxInstall = NginxDownloadUtil.install(this.localRepository,getNginxVersion(),isDisableValidationCertificates(), getLog());		
 		if(!nginxInstall.isSuccess())
 		{
 			getLog().error("Error to install nginx",nginxInstall.getThrowable());
@@ -189,5 +193,27 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	public void setNginxPrefixPath(String nginxPrefixPath)
 	{
 		this.nginxPrefixPath = nginxPrefixPath;
-	}		
+	}
+	
+	/**
+	 * @author Alejandro Vivas
+	 * @version 15/08/2017 0.0.1-SNAPSHOT
+	 * @since 15/08/2017 0.0.1-SNAPSHOT
+	 * @param disableValidationCertificates the disableValidationCertificates to set
+	 */
+	public void setDisableValidationCertificates(boolean disableValidationCertificates)
+	{
+		this.disableValidationCertificates = disableValidationCertificates;
+	}
+	
+	/**
+	 * @author Alejandro Vivas
+	 * @version 15/08/2017 0.0.1-SNAPSHOT
+	 * @since 15/08/2017 0.0.1-SNAPSHOT
+	 * @return the disableValidationCertificates
+	 */
+	public boolean isDisableValidationCertificates()
+	{
+		return disableValidationCertificates;
+	}
 }

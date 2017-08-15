@@ -28,8 +28,6 @@ import org.apache.maven.plugins.annotations.Mojo;
  * @author Alejandro Vivas
  * @version 14/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
- * @goal reload
- * @phase NONE 
  */
 @Mojo(name = "reload", defaultPhase = LifecyclePhase.NONE)
 public class ReloadNginxMojo extends  BaseNginxMojo

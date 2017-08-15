@@ -28,8 +28,6 @@ import org.apache.maven.plugins.annotations.Mojo;
  * @author Alejandro Vivas
  * @version 15/08/2017 0.0.1-SNAPSHOT
  * @since 15/08/2017 0.0.1-SNAPSHOT
- * @goal start
- * @phase PRE_INTEGRATION_TEST 
  */
 @Mojo(name = "start", defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST)
 public class StartNginxMojo extends BaseNginxMojo

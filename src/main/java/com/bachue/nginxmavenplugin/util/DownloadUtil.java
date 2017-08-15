@@ -39,7 +39,7 @@ import javax.net.ssl.X509TrustManager;
 /**
  * Download Util
  * @author Alejandro Vivas
- * @version 14/08/2017 0.0.1-SNAPSHOT
+ * @version 15/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
 public class DownloadUtil
@@ -47,7 +47,7 @@ public class DownloadUtil
 	/**
 	 * Download a file
 	 * @author Alejandro Vivas
-	 * @version 14/08/2017 0.0.1-SNAPSHOT
+	 * @version 15/08/2017 0.0.1-SNAPSHOT
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 * @param fileName Path to download
 	 * @param fileUrl Url path

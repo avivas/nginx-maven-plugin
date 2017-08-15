@@ -36,7 +36,7 @@ import com.bachue.nginxmavenplugin.util.NginxDownloadUtil.NginxInstall;
 /**
  * Base Mojo class
  * @author Alejandro Vivas
- * @version 14/08/2017 0.0.1-SNAPSHOT
+ * @version 15/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
 public abstract class BaseNginxMojo extends AbstractMojo
@@ -67,7 +67,7 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	/**
 	 * Execute nginx
 	 * @author Alejandro Vivas
-	 * @version 14/08/2017 0.0.1-SNAPSHOT
+	 * @version 15/08/2017 0.0.1-SNAPSHOT
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 */
 	public void execute() throws MojoExecutionException

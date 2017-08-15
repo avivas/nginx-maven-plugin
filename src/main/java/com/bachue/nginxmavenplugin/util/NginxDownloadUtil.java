@@ -35,7 +35,7 @@ import com.bachue.nginxmavenplugin.util.OS.TypeOs;
 /**
  * Util download nginx
  * @author Alejandro Vivas
- * @version 14/08/2017 0.0.1-SNAPSHOT
+ * @version 15/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
 public final class NginxDownloadUtil
@@ -133,7 +133,7 @@ public final class NginxDownloadUtil
 	/**
 	 * Install nginx
 	 * @author Alejandro Vivas
-	 * @version 14/08/2017 0.0.1-SNAPSHOT
+	 * @version 15/08/2017 0.0.1-SNAPSHOT
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 * @param localRepository Object to get repository
 	 * @param version Nginx version

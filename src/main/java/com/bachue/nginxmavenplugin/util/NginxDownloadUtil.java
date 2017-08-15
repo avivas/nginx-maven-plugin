@@ -153,35 +153,59 @@ public final class NginxDownloadUtil
 			
 			logger.info("Nginx version:[" + versionToDownload +"]");
 			
-			String downloadUrl = UrlsDownloadNginx.url(OS.CURRENT_OS,versionToDownload);
+			String downloadNginxUrl = UrlsDownloadNginx.url(OS.CURRENT_OS,versionToDownload);
 						
 			String installPath = file.toPath() + File.separator + "com" + File.separator +  "bachue" + File.separator + "nginx-maven-plugin" + File.separator;
 			String nginxDirectory =  installPath + "cache" + File.separator + "nginx-" + versionToDownload + File.separator;			
-			String zipPath = nginxDirectory + downloadUrl.substring(downloadUrl.lastIndexOf("/")+1);
+			String zipPath = nginxDirectory + downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf("/")+1);
 			
-			String nginxExecutablePath = nginxDirectory + downloadUrl.substring(downloadUrl.lastIndexOf("/")+1, downloadUrl.lastIndexOf(".")) + File.separator;
+			String nginxExecutablePath = nginxDirectory + downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf("/")+1, downloadNginxUrl.lastIndexOf(".")) + File.separator;
 			String nginxHome = nginxExecutablePath;
-			if(OS.CURRENT_OS.getTypeOs().equals(TypeOs.WIN))
+			OS currentOs = OS.CURRENT_OS;
+			if(currentOs.getTypeOs().equals(TypeOs.WIN))
 			{
 				nginxExecutablePath +=  "nginx.exe";
 			}
 			else
 			{
 				nginxExecutablePath +=  "sbin" + File.separator + "nginx";
-			}			
+			}
+			logger.info("TOS:" + currentOs.getTypeOs() + ":" + currentOs.getTypeOs().equals(TypeOs.UNIX));
 			
-			// Verified if exist download file, Verified if unzip file exist 
+			// Verified if exist download file
 			if( !new File(zipPath).exists() )
 			{
-				logger.info("Download:[" + downloadUrl + "] to :[" + zipPath +"]");
-				DownloadUtil.dowloadFile(zipPath, downloadUrl);
-			}			
+				logger.info("Download:[" + downloadNginxUrl + "] to [" + zipPath +"]");
+				DownloadUtil.dowloadFile(zipPath, downloadNginxUrl);
+			}
 			
-			// Verified if unzip files exist 
-			if( !new File(nginxExecutablePath).exists() )
+			if(currentOs.getTypeOs().equals(TypeOs.UNIX))
 			{
-				ZipUtil.unzip(zipPath, nginxDirectory,logger);
-			}			
+				String downloadUrlPcre = "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.41.tar.gz";
+				logger.info("Download:[" + downloadUrlPcre + "] to :[" + zipPath +"]");
+				DownloadUtil.dowloadFile(zipPath, downloadUrlPcre);
+				
+				String downloadUrlZlib = "http://zlib.net/zlib-1.2.11.tar.gz";
+				logger.info("Download:[" + downloadUrlZlib + "] to :[" + zipPath +"]");
+				DownloadUtil.dowloadFile(zipPath, downloadUrlZlib);
+				
+				String downloadUrlOpenssl = "http://www.openssl.org/source/openssl-1.0.2k.tar.gz";
+				logger.info("Download:[" + downloadUrlOpenssl + "] to :[" + zipPath +"]");
+				DownloadUtil.dowloadFile(zipPath, downloadUrlOpenssl);
+			}
+			
+			// Verified if unzip (win) files exist 
+			if(OS.CURRENT_OS.getTypeOs().equals(TypeOs.WIN))
+			{
+				if( !new File(nginxExecutablePath).exists() )
+				{
+					ZipUtil.unzip(zipPath, nginxDirectory,logger);
+				}
+			}
+			else
+			{
+				
+			}
 			
 			NginxInstall nginxInstall = new NginxInstall(nginxHome,nginxExecutablePath, true, null);
 

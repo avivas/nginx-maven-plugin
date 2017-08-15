@@ -72,6 +72,7 @@ public abstract class BaseNginxMojo extends AbstractMojo
 		NginxInstall nginxInstall = NginxDownloadUtil.install(this.localRepository,getNginxVersion(),getLog());		
 		if(!nginxInstall.isSuccess())
 		{
+			getLog().error("Error to install nginx",nginxInstall.getThrowable());
 			return;
 		}
 		

@@ -1,5 +1,7 @@
 package com.bachue.nginxmavenplugin.util;
 
+import java.io.File;
+
 /*-
  * #%L
  * nginx-maven-plugin Maven Plugin
@@ -21,6 +23,10 @@ package com.bachue.nginxmavenplugin.util;
  */
 
 import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.maven.plugin.logging.Log;
+import org.codehaus.plexus.util.StringUtils;
 
 /**
  * Run a process
@@ -42,5 +48,59 @@ public class RunProcessUtil
 	public static Process run(String[] args) throws IOException
 	{
 		return Runtime.getRuntime().exec(args);
+	}
+	
+	public static Process run(String[] args,String pwd,boolean printInputStream,boolean printErrorStream, final Log logger) throws IOException, InterruptedException
+	{
+		logger.info("Exec:[" + StringUtils.join(args," ") + "][" + pwd + "]");
+		
+		Process process = Runtime.getRuntime().exec(args,null,new File(pwd));
+		
+		if(printErrorStream)
+		{
+			logger.info("Error:" + args[0]);
+			InputStream e = process.getErrorStream();
+			int c;
+			StringBuilder stringBuilder = new StringBuilder();
+			while( (c = e.read()) != -1 )
+			{
+				char caracter = (char)c;
+				if(caracter == '\n')
+				{
+					logger.info(stringBuilder.toString());
+					stringBuilder = new StringBuilder();
+				}
+				else
+				{
+					stringBuilder.append(caracter);
+				}			
+			}
+		}
+		
+		if(printInputStream)
+		{
+			logger.info("Input:" + args[0]);
+			InputStream e = process.getInputStream();
+			StringBuilder stringBuilder = new StringBuilder();
+			int c;
+			while( (c = e.read()) != -1 )
+			{
+				char caracter = (char)c;
+				if(caracter == '\n')
+				{
+					logger.info(stringBuilder.toString());
+					stringBuilder = new StringBuilder();
+				}
+				else
+				{
+					stringBuilder.append(caracter);
+				}
+			}
+		}
+		
+		int exitValue = process.waitFor();
+		logger.info("Exit value:" + args[0] + ":[" + exitValue + "]");
+		
+		return process;
 	}
 }

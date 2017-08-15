@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.logging.Log;
+import org.codehaus.plexus.util.StringUtils;
 
 import com.bachue.nginxmavenplugin.util.OS.TypeOs;
 
@@ -181,15 +182,14 @@ public final class NginxDownloadUtil
 				DownloadUtil.dowloadFile(nginxCompressPath, downloadNginxUrl, disableValidationCertificates);
 			}
 
+			String downloadUrlPcre = UrlsDownloadNginx.urlPcre(versionToDownload);
+			String downloadUrlZlib = UrlsDownloadNginx.urlZlib(versionToDownload);
+			String downloadUrlOpenssl = UrlsDownloadNginx.urlOpenssl(versionToDownload);
 			String pcreCompressPath = null;
 			String zlibCompressPath = null;
 			String openSslCompressPath = null;
-			// if(currentOs.getTypeOs().equals(TypeOs.UNIX))
+			if (currentOs.getTypeOs().equals(TypeOs.UNIX))
 			{
-				String downloadUrlPcre = UrlsDownloadNginx.urlPcre(versionToDownload);
-				String downloadUrlZlib = UrlsDownloadNginx.urlZlib(versionToDownload);
-				String downloadUrlOpenssl = UrlsDownloadNginx.urlOpenssl(versionToDownload);
-
 				pcreCompressPath = nginxDirectory + downloadUrlPcre.substring(downloadUrlPcre.lastIndexOf("/") + 1);
 				zlibCompressPath = nginxDirectory + downloadUrlZlib.substring(downloadUrlZlib.lastIndexOf("/") + 1);
 				openSslCompressPath = nginxDirectory + downloadUrlOpenssl.substring(downloadUrlOpenssl.lastIndexOf("/") + 1);
@@ -204,6 +204,7 @@ public final class NginxDownloadUtil
 				DownloadUtil.dowloadFile(openSslCompressPath, downloadUrlOpenssl, disableValidationCertificates);
 			}
 
+			String sourceDirectory = nginxDirectory + File.separator + "src" + File.separator;
 			// Verified if executable nginx file exist
 			if (!new File(nginxExecutablePath).exists())
 			{
@@ -213,7 +214,7 @@ public final class NginxDownloadUtil
 				}
 				else if (nginxCompressPath.endsWith(".tar.gz"))
 				{
-					ZipUtil.untargz(nginxCompressPath, nginxDirectory, logger);
+					ZipUtil.untargz(nginxCompressPath, sourceDirectory, logger);
 				}
 				else
 				{
@@ -222,10 +223,36 @@ public final class NginxDownloadUtil
 
 				if (currentOs.getTypeOs().equals(TypeOs.UNIX))
 				{
-					ZipUtil.untargz(pcreCompressPath, nginxDirectory, logger);
-					ZipUtil.untargz(zlibCompressPath, nginxDirectory, logger);
-					ZipUtil.untargz(openSslCompressPath, nginxDirectory, logger);
+					ZipUtil.untargz(pcreCompressPath, sourceDirectory, logger);
+					ZipUtil.untargz(zlibCompressPath, sourceDirectory, logger);
+					ZipUtil.untargz(openSslCompressPath, sourceDirectory, logger);
 				}
+			}
+
+			// Compile nginx
+			if (currentOs.getTypeOs().equals(TypeOs.UNIX))
+			{
+				String homeNginx = execPermision(sourceDirectory, downloadNginxUrl, logger);
+				String homePcre = execPermision(sourceDirectory, downloadUrlPcre, logger);
+				String homeZlib = execPermision(sourceDirectory, downloadUrlZlib, logger);
+				String homeOpenssl = execPermision(sourceDirectory, downloadUrlOpenssl, logger);
+
+				String nginxFileName;
+				if (downloadNginxUrl.endsWith(".tar.gz"))
+				{
+					nginxFileName = downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf('/') + 1, downloadNginxUrl.lastIndexOf(".tar.gz"));
+				}
+				else
+				{
+					nginxFileName = downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf('/') + 1, downloadNginxUrl.lastIndexOf(".tgz"));
+				}
+
+				String[] execConfigureNginx = new String[] { "." + File.separator + "configure", "--prefix=" + nginxDirectory + nginxFileName, "--with-pcre=" + homePcre, "--with-zlib=" + homeZlib,
+				        "--with-openssl=" + homeOpenssl };
+
+				RunProcessUtil.run(execConfigureNginx, homeNginx, true, true, logger);
+				//RunProcessUtil.run(new String[] { "make" }, homeNginx, true, true, logger);
+				RunProcessUtil.run(new String[] { "make", "install" ,"1>","/tmp/mo","2>","/tmp/me"}, homeNginx, true, true, logger);
 			}
 
 			NginxInstall nginxInstall = new NginxInstall(nginxHome, nginxExecutablePath, true, null);
@@ -252,5 +279,32 @@ public final class NginxDownloadUtil
 		{
 			return new NginxInstall(null, null, false, e);
 		}
+		catch (InterruptedException e)
+		{
+			return new NginxInstall(null, null, false, e);
+		}
+	}
+
+	private static String execPermision(String sourceDirectory, String downloadUrl, final Log logger) throws IOException
+	{
+		String pathConfigureFile = sourceDirectory;
+		if (downloadUrl.endsWith(".tar.gz"))
+		{
+			pathConfigureFile += downloadUrl.substring(downloadUrl.lastIndexOf('/') + 1, downloadUrl.lastIndexOf(".tar.gz"));
+		}
+		else
+		{
+			pathConfigureFile += downloadUrl.substring(downloadUrl.lastIndexOf('/') + 1, downloadUrl.lastIndexOf(".tgz"));
+		}
+
+		String homeApp = pathConfigureFile;
+
+		pathConfigureFile += File.separator + "configure";
+
+		String[] execPermissionConfigureNginx = new String[] { "chmod", "u+x", pathConfigureFile };
+		logger.info("Exec:[" + StringUtils.join(execPermissionConfigureNginx, " ") + "]");
+		RunProcessUtil.run(execPermissionConfigureNginx);
+
+		return homeApp;
 	}
 }

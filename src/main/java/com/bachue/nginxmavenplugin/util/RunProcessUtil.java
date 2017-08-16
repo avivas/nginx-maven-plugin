@@ -56,12 +56,12 @@ public class RunProcessUtil
 		
 		Process process = Runtime.getRuntime().exec(args,null,new File(pwd));
 		
-		if(printErrorStream)
+		if(printInputStream)
 		{
-			logger.info("Error:" + args[0]);
-			InputStream e = process.getErrorStream();
-			int c;
+			logger.info("Input:" + args[0]);
+			InputStream e = process.getInputStream();
 			StringBuilder stringBuilder = new StringBuilder();
+			int c;
 			while( (c = e.read()) != -1 )
 			{
 				char caracter = (char)c;
@@ -73,16 +73,16 @@ public class RunProcessUtil
 				else
 				{
 					stringBuilder.append(caracter);
-				}			
+				}
 			}
 		}
 		
-		if(printInputStream)
+		if(printErrorStream)
 		{
-			logger.info("Input:" + args[0]);
-			InputStream e = process.getInputStream();
-			StringBuilder stringBuilder = new StringBuilder();
+			logger.info("Error:" + args[0]);
+			InputStream e = process.getErrorStream();
 			int c;
+			StringBuilder stringBuilder = new StringBuilder();
 			while( (c = e.read()) != -1 )
 			{
 				char caracter = (char)c;

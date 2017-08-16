@@ -163,7 +163,22 @@ public final class NginxDownloadUtil
 			String nginxDirectory = installPath + "cache" + File.separator + "nginx-" + versionToDownload + File.separator;
 			String nginxCompressPath = nginxDirectory + downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf("/") + 1);
 
-			String nginxExecutablePath = nginxDirectory + downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf("/") + 1, downloadNginxUrl.lastIndexOf(".")) + File.separator;
+			String nginxExecutablePath = nginxDirectory;
+			if(downloadNginxUrl.endsWith(".zip"))
+			{
+				nginxExecutablePath += downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf("/") + 1, downloadNginxUrl.lastIndexOf("."));
+			}
+			else if(downloadNginxUrl.endsWith(".tar.gz"))
+			{
+				nginxExecutablePath += downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf("/") + 1, downloadNginxUrl.lastIndexOf(".tar.gz"));
+			}
+			else
+			{
+				nginxExecutablePath += downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf("/") + 1, downloadNginxUrl.lastIndexOf(".tgz"));
+			}
+			
+			nginxExecutablePath += File.separator;
+			
 			String nginxHome = nginxExecutablePath;
 			OS currentOs = OS.CURRENT_OS;
 			if (currentOs.getTypeOs().equals(TypeOs.WIN))
@@ -175,6 +190,11 @@ public final class NginxDownloadUtil
 				nginxExecutablePath += "sbin" + File.separator + "nginx";
 			}
 
+			if (new File(nginxExecutablePath).exists())
+			{
+				return new NginxInstall(nginxHome, nginxExecutablePath, true, null);
+			}
+						
 			// Verified if exist download file
 			if (!new File(nginxCompressPath).exists())
 			{
@@ -230,7 +250,7 @@ public final class NginxDownloadUtil
 			}
 
 			// Compile nginx
-			if (currentOs.getTypeOs().equals(TypeOs.UNIX))
+			if (currentOs.getTypeOs().equals(TypeOs.UNIX) && !new File(nginxExecutablePath).exists())
 			{
 				String homeNginx = execPermision(sourceDirectory, downloadNginxUrl, logger);
 				String homePcre = execPermision(sourceDirectory, downloadUrlPcre, logger);
@@ -251,8 +271,7 @@ public final class NginxDownloadUtil
 				        "--with-openssl=" + homeOpenssl };
 
 				RunProcessUtil.run(execConfigureNginx, homeNginx, true, true, logger);
-				//RunProcessUtil.run(new String[] { "make" }, homeNginx, true, true, logger);
-				RunProcessUtil.run(new String[] { "make", "install" ,"1>","/tmp/mo","2>","/tmp/me"}, homeNginx, true, true, logger);
+				RunProcessUtil.run(new String[] { "make", "install" ,"-d"}, homeNginx, true, true, logger);
 			}
 
 			NginxInstall nginxInstall = new NginxInstall(nginxHome, nginxExecutablePath, true, null);

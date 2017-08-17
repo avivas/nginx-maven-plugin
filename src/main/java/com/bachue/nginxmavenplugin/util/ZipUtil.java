@@ -50,7 +50,7 @@ public class ZipUtil
 	 * @param logger Maven logger
 	 * @throws IOException If fail to unzip a file
 	 * @author Alejandro Vivas
-	 * @version 15/08/2017 0.0.1-SNAPSHOT
+	 * @version 16/08/2017 0.0.1-SNAPSHOT
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 */
 	public static void unzip(String pathZipFile, String outputFolder, final Log logger) throws IOException
@@ -83,7 +83,6 @@ public class ZipUtil
 				FileOutputStream fileOutputStream = null;
 				try
 				{
-					logger.info("Uncompress: " + newFile.getAbsolutePath());
 					fileOutputStream = new FileOutputStream(newFile);
 					int length;
 					while ((length = zipInputStream.read(buffer)) > 0)
@@ -111,7 +110,7 @@ public class ZipUtil
 	/**
 	 * Uncompress a tar.gz file in a folder
 	 * @author Alejandro Vivas
-	 * @version 15/08/2017 0.0.1-SNAPSHOT
+	 * @version 16/08/2017 0.0.1-SNAPSHOT
 	 * @since 15/08/2017 0.0.1-SNAPSHOT
 	 * @param pathTarGz File to uncompress
 	 * @param pathOutputFolder Output folder
@@ -135,7 +134,6 @@ public class ZipUtil
 			while (tarArchiveEntry != null)
 			{
 				File outputFile = new File(outputFolder, tarArchiveEntry.getName());
-				logger.info("Uncompress: " + outputFile.getCanonicalPath());
 				if (tarArchiveEntry.isDirectory())
 				{
 					outputFile.mkdirs();

@@ -26,7 +26,7 @@ package com.bachue.nginxmavenplugin.util;
  * @version 14/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
-public class NginxDownloadNotFoundException extends Exception
+public class PackageException extends Exception
 {
 	/** Version class */
 	private static final long serialVersionUID = 1L;
@@ -38,7 +38,7 @@ public class NginxDownloadNotFoundException extends Exception
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 * @param message Message about exception
 	 */
-	public NginxDownloadNotFoundException(String message)
+	public PackageException(String message)
 	{
 		super(message);
 	}	

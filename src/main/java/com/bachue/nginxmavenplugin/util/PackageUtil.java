@@ -32,6 +32,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.StringUtils;
 
 import com.bachue.nginxmavenplugin.dto.OsType;
+import com.bachue.nginxmavenplugin.dto.Package;
 
 /**
  * Util download nginx
@@ -39,7 +40,7 @@ import com.bachue.nginxmavenplugin.dto.OsType;
  * @version 16/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
-public final class NginxDownloadUtil
+public final class PackageUtil
 {
 	/**
 	 * Nginx data to install
@@ -127,7 +128,7 @@ public final class NginxDownloadUtil
 	 * @version 14/08/2017 0.0.1-SNAPSHOT
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 */
-	private NginxDownloadUtil()
+	private PackageUtil()
 	{
 	}
 
@@ -147,28 +148,32 @@ public final class NginxDownloadUtil
 		try
 		{
 			URL url = new URL(localRepository.getUrl());
-			File file = new File(url.getFile());
+			File fileRepository = new File(url.getFile());
 
+			UrlsDownloadNginx urlsDownloadNginx = new UrlsDownloadNginx(logger);
 			String versionToDownload = version;
 			if (version.equalsIgnoreCase("latest"))
 			{
-				versionToDownload = UrlsDownloadNginx.getLatest();
+				versionToDownload = urlsDownloadNginx.getLatestVersion();
 			}
 
 			logger.info("Nginx version:[" + versionToDownload + "]");
 
-			String downloadNginxUrl = UrlsDownloadNginx.urlNginx(OS.CURRENT_OS, versionToDownload);
+			Package osPackageVersion = urlsDownloadNginx.getPackage(versionToDownload);
+			logger.info(osPackageVersion.toString());
 
-			String installPath = file.toPath() + File.separator + "com" + File.separator + "bachue" + File.separator + "nginx-maven-plugin" + File.separator;
+			String downloadNginxUrl = osPackageVersion.getDownloadUrl();
+
+			String installPath = fileRepository.toPath() + File.separator + "com" + File.separator + "bachue" + File.separator + "nginx-maven-plugin" + File.separator;
 			String nginxDirectory = installPath + "cache" + File.separator + "nginx-" + versionToDownload + File.separator;
 			String nginxCompressPath = nginxDirectory + downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf("/") + 1);
 
 			String nginxExecutablePath = nginxDirectory;
-			if(downloadNginxUrl.endsWith(".zip"))
+			if (downloadNginxUrl.endsWith(".zip"))
 			{
 				nginxExecutablePath += downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf("/") + 1, downloadNginxUrl.lastIndexOf("."));
 			}
-			else if(downloadNginxUrl.endsWith(".tar.gz"))
+			else if (downloadNginxUrl.endsWith(".tar.gz"))
 			{
 				nginxExecutablePath += downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf("/") + 1, downloadNginxUrl.lastIndexOf(".tar.gz"));
 			}
@@ -176,26 +181,25 @@ public final class NginxDownloadUtil
 			{
 				nginxExecutablePath += downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf("/") + 1, downloadNginxUrl.lastIndexOf(".tgz"));
 			}
-			
+
 			nginxExecutablePath += File.separator;
-			
+
 			String nginxHome = nginxExecutablePath;
-			OS currentOs = OS.CURRENT_OS;
-			if (currentOs.getTypeOs().equals(OsType.WIN))
+			if (urlsDownloadNginx.getTypeOs().equals(OsType.WIN))
 			{
 				nginxExecutablePath += "nginx.exe";
 			}
 			else
 			{
 				nginxExecutablePath += "sbin" + File.separator + "nginx";
-			}	
-			
+			}
+
 			// Verified before download nginx
 			if (new File(nginxExecutablePath).exists())
 			{
 				return new NginxInstall(nginxHome, nginxExecutablePath, true, null);
 			}
-						
+
 			// Verified if exist download file
 			if (!new File(nginxCompressPath).exists())
 			{
@@ -203,31 +207,15 @@ public final class NginxDownloadUtil
 				DownloadUtil.dowloadFile(nginxCompressPath, downloadNginxUrl, disableValidationCertificates);
 			}
 			
-			
-			String downloadUrlPcre = null;
-			String downloadUrlZlib = null;
-			String downloadUrlOpenssl = null;
-			String pcreCompressPath = null;
-			String zlibCompressPath = null;
-			String openSslCompressPath = null;
-			if (currentOs.getTypeOs().equals(OsType.UNIX))
+			// Download dependencies
+			if (osPackageVersion.getDependencies() != null)
 			{
-				downloadUrlPcre = UrlsDownloadNginx.urlPcre(versionToDownload);
-				downloadUrlZlib = UrlsDownloadNginx.urlZlib(versionToDownload);
-				downloadUrlOpenssl = UrlsDownloadNginx.urlOpenssl(versionToDownload);
-				
-				pcreCompressPath = nginxDirectory + downloadUrlPcre.substring(downloadUrlPcre.lastIndexOf("/") + 1);
-				zlibCompressPath = nginxDirectory + downloadUrlZlib.substring(downloadUrlZlib.lastIndexOf("/") + 1);
-				openSslCompressPath = nginxDirectory + downloadUrlOpenssl.substring(downloadUrlOpenssl.lastIndexOf("/") + 1);
-
-				logger.info("Download:[" + downloadUrlPcre + "] to :[" + pcreCompressPath + "]");
-				DownloadUtil.dowloadFile(pcreCompressPath, downloadUrlPcre, disableValidationCertificates);
-
-				logger.info("Download:[" + downloadUrlZlib + "] to :[" + zlibCompressPath + "]");
-				DownloadUtil.dowloadFile(zlibCompressPath, downloadUrlZlib, disableValidationCertificates);
-
-				logger.info("Download:[" + downloadUrlOpenssl + "] to :[" + openSslCompressPath + "]");
-				DownloadUtil.dowloadFile(openSslCompressPath, downloadUrlOpenssl, disableValidationCertificates);
+				for (Package dependency : osPackageVersion.getDependencies())
+				{
+					String compressPath = nginxDirectory + dependency.getDownloadUrl().substring(dependency.getDownloadUrl().lastIndexOf("/") + 1);
+					logger.info("Download:[" + dependency.getDownloadUrl() + "] to :[" + compressPath + "]");
+					DownloadUtil.dowloadFile(compressPath, dependency.getDownloadUrl(), disableValidationCertificates);
+				}
 			}
 
 			String sourceDirectory = nginxDirectory + File.separator + "src" + File.separator;
@@ -247,21 +235,31 @@ public final class NginxDownloadUtil
 					return new NginxInstall(null, null, false, new Throwable("Unsupported file type"));
 				}
 
-				if (currentOs.getTypeOs().equals(OsType.UNIX))
+				if (osPackageVersion.getDependencies() != null)
 				{
-					ZipUtil.untargz(pcreCompressPath, sourceDirectory, logger);
-					ZipUtil.untargz(zlibCompressPath, sourceDirectory, logger);
-					ZipUtil.untargz(openSslCompressPath, sourceDirectory, logger);
+					for (Package dependency : osPackageVersion.getDependencies())
+					{
+						String compressPath = nginxDirectory + dependency.getDownloadUrl().substring(dependency.getDownloadUrl().lastIndexOf("/") + 1);
+						logger.info("Uncompress:[" + dependency.getDownloadUrl() + "] to :[" + compressPath + "]");
+						ZipUtil.untargz(compressPath, sourceDirectory, logger);
+					}
 				}
 			}
 
-			// Compile nginx
-			if (currentOs.getTypeOs().equals(OsType.UNIX) && !new File(nginxExecutablePath).exists())
+			// Compile and install nginx
+			if ((osPackageVersion.getDependencies() != null) && !new File(nginxExecutablePath).exists())
 			{
 				String homeNginx = grantExecPermision(sourceDirectory, downloadNginxUrl, logger);
-				String homePcre = grantExecPermision(sourceDirectory, downloadUrlPcre, logger);
-				String homeZlib = grantExecPermision(sourceDirectory, downloadUrlZlib, logger);
-				String homeOpenssl = grantExecPermision(sourceDirectory, downloadUrlOpenssl, logger);
+				StringBuilder stringOptionsBuilder = new StringBuilder();
+				for (Package package1 : osPackageVersion.getDependencies())
+				{
+					String home = grantExecPermision(sourceDirectory, package1.getDownloadUrl(), logger);
+					stringOptionsBuilder.append("--with-");
+					stringOptionsBuilder.append(package1.getName());
+					stringOptionsBuilder.append("=");
+					stringOptionsBuilder.append(home);
+					stringOptionsBuilder.append(" ");
+				}
 
 				String nginxFileName;
 				if (downloadNginxUrl.endsWith(".tar.gz"))
@@ -273,11 +271,12 @@ public final class NginxDownloadUtil
 					nginxFileName = downloadNginxUrl.substring(downloadNginxUrl.lastIndexOf('/') + 1, downloadNginxUrl.lastIndexOf(".tgz"));
 				}
 
-				String[] execConfigureNginx = new String[] { "." + File.separator + "configure", "--prefix=" + nginxDirectory + nginxFileName, "--with-pcre=" + homePcre, "--with-zlib=" + homeZlib,
-				        "--with-openssl=" + homeOpenssl };
+				String[] execConfigureNginx = new String[] { "." + File.separator + "configure", "--prefix=" + nginxDirectory + nginxFileName };
+				String[] options = stringOptionsBuilder.toString().split(" ");
+				execConfigureNginx = ArrayUtil.concat(execConfigureNginx, options);
 
 				RunProcessUtil.run(execConfigureNginx, homeNginx, logger);
-				RunProcessUtil.run(new String[] { "make", "install" ,"-d"}, homeNginx, logger);
+				RunProcessUtil.run(new String[] { "make", "install", "-d" }, homeNginx, logger);
 			}
 
 			NginxInstall nginxInstall = new NginxInstall(nginxHome, nginxExecutablePath, true, null);
@@ -292,7 +291,7 @@ public final class NginxDownloadUtil
 		{
 			return new NginxInstall(null, null, false, ioException);
 		}
-		catch (NginxDownloadNotFoundException e)
+		catch (PackageException e)
 		{
 			return new NginxInstall(null, null, false, e);
 		}
@@ -311,7 +310,7 @@ public final class NginxDownloadUtil
 	}
 
 	/**
-	 * Grant exec permission a configure file 
+	 * Grant exec permission a configure file
 	 * @author Alejandro Vivas
 	 * @version 17/08/2017 0.0.1-SNAPSHOT
 	 * @since 17/08/2017 0.0.1-SNAPSHOT

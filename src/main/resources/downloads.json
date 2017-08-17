@@ -2,6 +2,7 @@
 	{		
 		 "name":"nginx"				
 		,"version":"1.13.4"
+		,"latest": true
 		,"osType":"WIN"
 		,"downloadUrl":"https://nginx.org/download/nginx-1.13.4.zip"
 		,"ascCheckfileUrl":"https://nginx.org/download/nginx-1.13.4.zip.asc"
@@ -18,7 +19,8 @@
 	,{	
 		 "name":"nginx"
 		,"version":"1.13.4"
-		,"osType":"UNIX"				
+		,"latest": true
+		,"osType":"UNIX"
 		,"downloadUrl":"https://nginx.org/download/nginx-1.13.4.tar.gz"
 		,"ascCheckfileUrl":"https://nginx.org/download/nginx-1.13.4.tar.gz.asc"
 		,"packageType":"SOURCE"		

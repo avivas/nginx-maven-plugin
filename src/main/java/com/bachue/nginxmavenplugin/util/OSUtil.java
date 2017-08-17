@@ -1,7 +1,5 @@
 package com.bachue.nginxmavenplugin.util;
 
-import com.bachue.nginxmavenplugin.dto.OsType;
-
 /*-
  * #%L
  * nginx-maven-plugin Maven Plugin
@@ -28,73 +26,8 @@ import com.bachue.nginxmavenplugin.dto.OsType;
  * @version 14/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
-public class OS
+public class OSUtil
 {
-	/** OS string */
-	public static final String	OS_STRING	= System.getProperty("os.name").toLowerCase();
-	/** Current OS */
-	public static final OS		CURRENT_OS;
-
-	static
-	{
-		OsType typeOs;
-		if (isWindows())
-		{
-			typeOs = OsType.WIN;
-		}
-		else if (isUnix())
-		{
-			typeOs = OsType.UNIX;
-		}
-		else
-		{
-			typeOs = OsType.UNKNOWN;
-		}
-
-		CURRENT_OS = new OS(OS_STRING, typeOs);
-	}
-
-	/** OS name */
-	private final String	name;
-	/** Type OS */
-	private final OsType	typeOs;
-
-	/**
-	 * Create a OS
-	 * @author Alejandro Vivas
-	 * @version 14/08/2017 0.0.1-SNAPSHOT
-	 * @since 14/08/2017 0.0.1-SNAPSHOT
-	 * @param name OS name
-	 * @param typeOs Type os
-	 */
-	public OS(String name,OsType typeOs)
-	{
-		this.name = name;
-		this.typeOs = typeOs;
-	}
-
-	/**
-	 * @author Alejandro Vivas
-	 * @version 14/08/2017 0.0.1-SNAPSHOT
-	 * @since 14/08/2017 0.0.1-SNAPSHOT
-	 * @return the name
-	 */
-	public String getName()
-	{
-		return name;
-	}
-
-	/**
-	 * @author Alejandro Vivas
-	 * @version 14/08/2017 0.0.1-SNAPSHOT
-	 * @since 14/08/2017 0.0.1-SNAPSHOT
-	 * @return the typeOs
-	 */
-	public OsType getTypeOs()
-	{
-		return typeOs;
-	}
-
 	/**
 	 * True if a win OS, false otherwise
 	 * @author Alejandro Vivas
@@ -102,8 +35,9 @@ public class OS
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 * @return True if a windows os, false otherwise
 	 */
-	private static boolean isWindows()
+	public static boolean isWindows()
 	{
+		String	OS_STRING	= System.getProperty("os.name").toLowerCase();
 		return (OS_STRING.indexOf("win") >= 0);
 	}
 
@@ -114,8 +48,9 @@ public class OS
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 * @return True if a windows OS, false otherwise
 	 */
-	private static boolean isUnix()
+	public static boolean isUnix()
 	{
+		String	OS_STRING	= System.getProperty("os.name").toLowerCase();
 		return (OS_STRING.indexOf("nix") >= 0 || OS_STRING.indexOf("nux") >= 0 || OS_STRING.indexOf("aix") > 0);
 	}
 }

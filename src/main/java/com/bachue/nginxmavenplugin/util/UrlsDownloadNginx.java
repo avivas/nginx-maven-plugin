@@ -1,5 +1,7 @@
 package com.bachue.nginxmavenplugin.util;
 
+import java.io.InputStream;
+
 /*-
  * #%L
  * nginx-maven-plugin Maven Plugin
@@ -23,7 +25,11 @@ package com.bachue.nginxmavenplugin.util;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.bachue.nginxmavenplugin.util.OS.TypeOs;
+import org.apache.commons.io.IOUtils;
+
+import com.bachue.nginxmavenplugin.dto.OsType;
+import com.bachue.nginxmavenplugin.dto.Software;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Class to get download Urls
@@ -34,31 +40,59 @@ import com.bachue.nginxmavenplugin.util.OS.TypeOs;
 public class UrlsDownloadNginx
 {
 	/** Map to get Urls by TypeOs and version */
-	private static final Map<TypeOs, Map<String, String>>	nginxOsToVersion	= new TreeMap<TypeOs, Map<String, String>>();
+	private static final Map<OsType, Map<String, String>>	nginxOsToVersion	= new TreeMap<OsType, Map<String, String>>();
 
 	/** Map to get Urls by TypeOs and version */
 	private static final Map<String, String>				pcreToVersion		= new TreeMap<String, String>();
 	private static final Map<String, String>				zlibToVersion		= new TreeMap<String, String>();
 	private static final Map<String, String>				opensslToVersion	= new TreeMap<String, String>();
 
-	/** Load Urls */
 	static
 	{
-		nginxOsToVersion.put(TypeOs.WIN, new TreeMap<String, String>());
-		nginxOsToVersion.get(TypeOs.WIN).put("1.12.1", "https://nginx.org/download/nginx-1.12.1.zip");
-		nginxOsToVersion.get(TypeOs.WIN).put("1.13.4", "https://nginx.org/download/nginx-1.13.4.zip");
-		nginxOsToVersion.get(TypeOs.WIN).put("latest", "https://nginx.org/download/nginx-1.13.4.zip");
-
-		nginxOsToVersion.put(TypeOs.UNIX, new TreeMap<String, String>());
-		nginxOsToVersion.get(TypeOs.UNIX).put("1.12.1", "https://nginx.org/download/nginx-1.12.1.tar.gz");
-		nginxOsToVersion.get(TypeOs.UNIX).put("1.13.4", "https://nginx.org/download/nginx-1.13.4.tar.gz");
-		nginxOsToVersion.get(TypeOs.UNIX).put("latest", "https://nginx.org/download/nginx-1.13.4.tar.gz");
-
-		pcreToVersion.put("1.13.4", "https://ftp.pcre.org/pub/pcre/pcre-8.41.tar.gz");
-		zlibToVersion.put("1.13.4", "http://zlib.net/zlib-1.2.11.tar.gz");
-		opensslToVersion.put("1.13.4", "https://www.openssl.org/source/openssl-1.0.2k.tar.gz");
+		try
+		{
+			nginxOsToVersion.put(OsType.WIN, new TreeMap<String, String>());
+			nginxOsToVersion.put(OsType.UNIX, new TreeMap<String, String>());
+			
+			InputStream urlDownloadFile = UrlsDownloadNginx.class.getClassLoader().getResourceAsStream("downloads.json");
+		
+			byte[] jsonData =  IOUtils.toByteArray(urlDownloadFile);
+			System.out.println("Data:" + new String(jsonData));
+			ObjectMapper mapper = new ObjectMapper();
+			Software[] softwares = mapper.readValue(jsonData, Software[].class);
+			for(Software nginx : softwares)
+			{
+				nginxOsToVersion.get(nginx.getOsType()).put(nginx.getVersion(), nginx.getDownloadUrl());
+				
+				if( nginx.getDependencies() != null )
+				{
+					for(Software dependency :  nginx.getDependencies())
+					{
+						switch (dependency.getName())
+						{
+							case "pcre":
+								pcreToVersion.put(nginx.getVersion(),dependency.getDownloadUrl());								
+							break;
+							
+							case "zlib":
+								zlibToVersion.put(nginx.getVersion(),dependency.getDownloadUrl());
+							break;
+							
+							case "openssl":
+								opensslToVersion.put(nginx.getVersion(),dependency.getDownloadUrl());
+							break;
+						}
+					}
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			System.out.println("Fatal error to try download files:");
+			e.printStackTrace();
+		}
 	}
-
+	
 	/**
 	 * Return a URL by OS and version
 	 * @author Alejandro Vivas
@@ -153,4 +187,6 @@ public class UrlsDownloadNginx
 	{
 		return "1.13.4";
 	}
+	
+	
 }

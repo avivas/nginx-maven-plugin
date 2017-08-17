@@ -1,5 +1,7 @@
 package com.bachue.nginxmavenplugin.util;
 
+import com.bachue.nginxmavenplugin.dto.OsType;
+
 /*-
  * #%L
  * nginx-maven-plugin Maven Plugin
@@ -33,36 +35,20 @@ public class OS
 	/** Current OS */
 	public static final OS		CURRENT_OS;
 
-	/**
-	 * TypeOs
-	 * @author Alejandro Vivas
-	 * @version 14/08/2017 0.0.1-SNAPSHOT
-	 * @since 14/08/2017 0.0.1-SNAPSHOT
-	 */
-	public static enum TypeOs
-	{
-		/** Win os */
-		WIN, 
-		/** Unix os */
-		UNIX,
-		/** Unknown os */
-		UNKNOWN
-	}
-	
 	static
 	{
-		TypeOs typeOs;
+		OsType typeOs;
 		if (isWindows())
 		{
-			typeOs = TypeOs.WIN;
+			typeOs = OsType.WIN;
 		}
 		else if (isUnix())
 		{
-			typeOs = TypeOs.UNIX;
+			typeOs = OsType.UNIX;
 		}
 		else
 		{
-			typeOs = TypeOs.UNKNOWN;
+			typeOs = OsType.UNKNOWN;
 		}
 
 		CURRENT_OS = new OS(OS_STRING, typeOs);
@@ -71,7 +57,7 @@ public class OS
 	/** OS name */
 	private final String	name;
 	/** Type OS */
-	private final TypeOs	typeOs;
+	private final OsType	typeOs;
 
 	/**
 	 * Create a OS
@@ -81,7 +67,7 @@ public class OS
 	 * @param name OS name
 	 * @param typeOs Type os
 	 */
-	public OS(String name,TypeOs typeOs)
+	public OS(String name,OsType typeOs)
 	{
 		this.name = name;
 		this.typeOs = typeOs;
@@ -104,7 +90,7 @@ public class OS
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 * @return the typeOs
 	 */
-	public TypeOs getTypeOs()
+	public OsType getTypeOs()
 	{
 		return typeOs;
 	}

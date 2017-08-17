@@ -49,58 +49,64 @@ public class RunProcessUtil
 	{
 		return Runtime.getRuntime().exec(args);
 	}
-	
-	public static Process run(String[] args,String pwd,boolean printInputStream,boolean printErrorStream, final Log logger) throws IOException, InterruptedException
+
+	/**
+	 * Run a process
+	 * @author Alejandro Vivas
+	 * @version 16/08/2017 0.0.1-SNAPSHOT
+	 * @since 16/08/2017 0.0.1-SNAPSHOT
+	 * @param args Arguments to start a process
+	 * @param pwd The working directory of the subprocess
+	 * @param logger Logger to print
+	 * @return Process create 
+	 * @throws IOException If fail to print
+	 * @throws InterruptedException If fail to print
+	 */
+	public static Process run(String[] args, String pwd, final Log logger) throws IOException, InterruptedException
 	{
-		logger.info("Exec:[" + StringUtils.join(args," ") + "][" + pwd + "]");
-		
-		Process process = Runtime.getRuntime().exec(args,null,new File(pwd));
-		
-		if(printInputStream)
-		{
-			logger.info("Input:" + args[0]);
-			InputStream e = process.getInputStream();
-			StringBuilder stringBuilder = new StringBuilder();
-			int c;
-			while( (c = e.read()) != -1 )
-			{
-				char caracter = (char)c;
-				if(caracter == '\n')
-				{
-					logger.info(stringBuilder.toString());
-					stringBuilder = new StringBuilder();
-				}
-				else
-				{
-					stringBuilder.append(caracter);
-				}
-			}
-		}
-		
-		if(printErrorStream)
-		{
-			logger.info("Error:" + args[0]);
-			InputStream e = process.getErrorStream();
-			int c;
-			StringBuilder stringBuilder = new StringBuilder();
-			while( (c = e.read()) != -1 )
-			{
-				char caracter = (char)c;
-				if(caracter == '\n')
-				{
-					logger.info(stringBuilder.toString());
-					stringBuilder = new StringBuilder();
-				}
-				else
-				{
-					stringBuilder.append(caracter);
-				}
-			}
-		}
-		
+		logger.info("Exec:[" + StringUtils.join(args, " ") + "][" + pwd + "]");
+
+		Process process = Runtime.getRuntime().exec(args, null, new File(pwd));
+
+		logger.info("Standar Output:" + args[0]);
+		InputStream inputStream = process.getInputStream();
+		printInputStreamToLog(inputStream, logger);
+
+		logger.info("Error Output:" + args[0]);
+		InputStream errorInputStream = process.getErrorStream();
+		printInputStreamToLog(errorInputStream, logger);
+
 		int exitValue = process.waitFor();
-		logger.info("Exit value:" + args[0] + ":[" + exitValue + "]");
-		
+		logger.info("Exit value:[" + exitValue + "] to exec:[" + StringUtils.join(args, " ") + "]");
+
 		return process;
+	}
+
+	/**
+	 * Print a inputStream on log
+	 * @author Alejandro Vivas
+	 * @version 16/08/2017 0.0.1-SNAPSHOT
+	 * @since 16/08/2017 0.0.1-SNAPSHOT
+	 * @param inputStream InputStream to print
+	 * @param logger Logger to print
+	 * @throws IOException If fail to print
+	 */
+	private static void printInputStreamToLog(final InputStream inputStream, final Log logger) throws IOException
+	{
+		int c;
+		StringBuilder stringBuilder = new StringBuilder();
+		while ((c = inputStream.read()) != -1)
+		{
+			char caracter = (char) c;
+			if (caracter == '\n')
+			{
+				logger.info(stringBuilder.toString());
+				stringBuilder = new StringBuilder();
+			}
+			else
+			{
+				stringBuilder.append(caracter);
+			}
+		}
 	}
 }

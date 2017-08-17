@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @version 14/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
-public class UrlsDownloadNginx
+public class PackageConfiguration
 {
 	private final Log logger;
 	/** Latest version for os */
@@ -33,7 +33,7 @@ public class UrlsDownloadNginx
 	 * @since 17/08/2017 0.0.1-SNAPSHOT
 	 * @throws IOException
 	 */
-	public UrlsDownloadNginx(final Log logger) throws IOException 
+	public PackageConfiguration(final Log logger) throws IOException 
 	{
 		this.logger = logger;
 		// Get packages configuration
@@ -121,7 +121,7 @@ public class UrlsDownloadNginx
 	 */
 	private static Package[] getPackagesDownloadUrlsOnLocalFile() throws IOException
 	{
-		InputStream urlDownloadFile = UrlsDownloadNginx.class.getClassLoader().getResourceAsStream("downloads.json");
+		InputStream urlDownloadFile = PackageConfiguration.class.getClassLoader().getResourceAsStream("downloads.json");
 	
 		byte[] jsonData =  IOUtils.toByteArray(urlDownloadFile);
 		ObjectMapper mapper = new ObjectMapper();

@@ -24,11 +24,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -39,7 +41,7 @@ import javax.net.ssl.X509TrustManager;
 /**
  * Download Util
  * @author Alejandro Vivas
- * @version 15/08/2017 0.0.1-SNAPSHOT
+ * @version 18/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
 public class DownloadUtil
@@ -47,7 +49,7 @@ public class DownloadUtil
 	/**
 	 * Download a file
 	 * @author Alejandro Vivas
-	 * @version 15/08/2017 0.0.1-SNAPSHOT
+	 * @version 18/08/2017 0.0.1-SNAPSHOT
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 * @param fileName Path to download
 	 * @param fileUrl Url path
@@ -59,13 +61,69 @@ public class DownloadUtil
 	 */
 	public static void dowloadFile(String fileName, String fileUrl, boolean disableValidationCertificates) throws IOException, KeyManagementException, NoSuchAlgorithmException
 	{
+		File f = new File(fileName);
+		
+		// Create parent folders
+		new File(f.getParent()).mkdirs();
+		
+		// Write file
+		FileOutputStream fileOutputStream = new FileOutputStream(f);
+		dowloadFile(fileOutputStream,fileUrl,disableValidationCertificates);		
+	}
+	
+	/**
+	 * Download a file a return content
+	 * @author Alejandro Vivas
+	 * @version 18/08/2017 0.0.1-SNAPSHOT
+	 * @since 18/08/2017 0.0.1-SNAPSHOT
+	 * @param fileUrl URL to file
+	 * @param disableValidationCertificates Disable validation certificates
+	 * @return Content of file
+	 * @throws IOException If fail to download
+	 * @throws KeyManagementException If fail to download on https
+	 * @throws NoSuchAlgorithmException If fail to download on https
+	 */
+	public static byte [] downloadFile(String fileUrl,boolean disableValidationCertificates) throws IOException, KeyManagementException, NoSuchAlgorithmException
+	{
+		final ArrayList<Byte> bytes = new ArrayList<>();
+		dowloadFile(new OutputStream()
+		{			
+			@Override
+			public void write(int b) throws IOException
+			{
+				bytes.add((byte)b);
+			}
+		},fileUrl, disableValidationCertificates);
+		
+		byte [] result = new byte[bytes.size()];
+		for(int i = 0; i < bytes.size();i++)
+		{
+			result[i] = bytes.get(i);
+		}
+		
+		return result;
+	}
+
+	/**
+	 * Download a file on OutputStream
+	 * @author Alejandro Vivas
+	 * @version 18/08/2017 0.0.1-SNAPSHOT
+	 * @since 18/08/2017 0.0.1-SNAPSHOT
+	 * @param outputStream OutputStream, this method close de OutputStream
+	 * @param fileUrl Url to download
+	 * @param disableValidationCertificates Disable validation certificates on https
+	 * @throws IOException If fail to download
+	 * @throws KeyManagementException If fail to download on https
+	 * @throws NoSuchAlgorithmException If fail to download on https
+	 */
+	private static void dowloadFile(OutputStream outputStream, String fileUrl, boolean disableValidationCertificates) throws IOException, KeyManagementException, NoSuchAlgorithmException
+	{
 		SSLSocketFactory sslSocketFactory = null;
 		if (disableValidationCertificates)
 		{
 			sslSocketFactory = disableValidationCertificates();
 		}
 
-		FileOutputStream fileOutputStream = null;
 		InputStream inputStream = null;
 		try
 		{
@@ -73,19 +131,13 @@ public class DownloadUtil
 			URL url = new URL(fileUrl);
 			URLConnection connection = url.openConnection();
 			inputStream = connection.getInputStream();
-
-			File f = new File(fileName);
-			
-			// Create parent folders
-			new File(f.getParent()).mkdirs();
 			
 			// Write file
-			fileOutputStream = new FileOutputStream(f);
 			int length = -1;
 			byte[] buffer = new byte[1024];
 			while ((length = inputStream.read(buffer)) > -1)
 			{
-				fileOutputStream.write(buffer, 0, length);
+				outputStream.write(buffer, 0, length);
 			}			
 		}
 		finally
@@ -97,9 +149,9 @@ public class DownloadUtil
 			
 			try
 			{
-				if(fileOutputStream != null)
+				if(outputStream != null)
 				{
-					fileOutputStream.close();
+					outputStream.close();
 				}
 			}
 			finally
@@ -111,7 +163,7 @@ public class DownloadUtil
 			}
 		}
 	}
-
+	
 	/**
 	 * Disable validation certificates on https
 	 * @author Alejandro Vivas

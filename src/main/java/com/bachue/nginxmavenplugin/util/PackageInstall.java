@@ -38,7 +38,7 @@ import com.bachue.nginxmavenplugin.dto.PackageType;
 /**
  * Util download nginx
  * @author Alejandro Vivas
- * @version 17/08/2017 0.0.1-SNAPSHOT
+ * @version 18/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
 public final class PackageInstall
@@ -47,23 +47,29 @@ public final class PackageInstall
 	private final ArtifactRepository localRepository;
 	/** Maven logger */
 	private final Log logger;
+	/** Url to downloads.json file */
+	private String urlDownloads;	
+	/** Path to downloads.json file */
+	private String pathDownloads;
 	
 	/**
 	 * Private constructor to avoid instances
 	 * @author Alejandro Vivas
-	 * @version 14/08/2017 0.0.1-SNAPSHOT
+	 * @version 18/08/2017 0.0.1-SNAPSHOT
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 */
-	public PackageInstall(final ArtifactRepository localRepository,final Log logger)
+	public PackageInstall(final ArtifactRepository localRepository,final Log logger,String urlDownloads, String pathDownloads)
 	{
 		this.localRepository = localRepository;
 		this.logger = logger;
+		this.urlDownloads = urlDownloads;
+		this.pathDownloads = pathDownloads;
 	}
 
 	/**
 	 * Install nginx
 	 * @author Alejandro Vivas
-	 * @version 17/08/2017 0.0.1-SNAPSHOT
+	 * @version 18/08/2017 0.0.1-SNAPSHOT
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 * @param localRepository Object to get repository
 	 * @param version Nginx version
@@ -78,7 +84,7 @@ public final class PackageInstall
 			URL url = new URL(localRepository.getUrl());
 			File fileRepository = new File(url.getFile());
 
-			PackageConfiguration urlsDownloadNginx = new PackageConfiguration(logger);
+			PackageConfiguration urlsDownloadNginx = new PackageConfiguration(logger,this.urlDownloads,this.pathDownloads);
 			String versionToDownload = version;
 			if (version.equalsIgnoreCase("latest"))
 			{

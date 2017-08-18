@@ -37,7 +37,7 @@ import com.bachue.nginxmavenplugin.util.RunProcessUtil;
 /**
  * Base Mojo class
  * @author Alejandro Vivas
- * @version 17/08/2017 0.0.1-SNAPSHOT
+ * @version 18/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
 public abstract class BaseNginxMojo extends AbstractMojo
@@ -65,10 +65,18 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	@Parameter(property = "disableValidationCertificates", defaultValue = "true")
 	private boolean disableValidationCertificates;
 	
+	/** Url to downloads.json file */
+	@Parameter(property = "urlDownloads", defaultValue = "https://raw.githubusercontent.com/avivas/nginx-maven-plugin/master/src/main/resources/downloads.json")
+	private String urlDownloads;
+	
+	/** Path to downloads.json file */
+	@Parameter(property = "pathDownloads")
+	private String pathDownloads;
+	
 	/**
 	 * Execute nginx
 	 * @author Alejandro Vivas
-	 * @version 17/08/2017 0.0.1-SNAPSHOT
+	 * @version 18/08/2017 0.0.1-SNAPSHOT
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 */
 	public void execute() throws MojoExecutionException
@@ -77,7 +85,7 @@ public abstract class BaseNginxMojo extends AbstractMojo
 		PackageResultInstall nginxInstall;
 		try
 		{
-			PackageInstall packageInstall = new PackageInstall(localRepository, getLog());
+			PackageInstall packageInstall = new PackageInstall(localRepository, getLog(),getUrlDownloads(),getPathDownloads());
 			nginxInstall = packageInstall.install(getNginxVersion(),isDisableValidationCertificates());
 		} 
 		catch (PackageInstallException e1)
@@ -122,7 +130,7 @@ public abstract class BaseNginxMojo extends AbstractMojo
 		}
 		catch (IOException e)
 		{
-			getLog().error("Error to start nginx", e);
+			getLog().error("Error to run nginx", e);
 		}		
 	}
 	
@@ -221,5 +229,49 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	public boolean isDisableValidationCertificates()
 	{
 		return disableValidationCertificates;
+	}
+	
+	/**
+	 * @author Alejandro Vivas
+	 * @version 18/08/2017 0.0.1-SNAPSHOT
+	 * @since 18/08/2017 0.0.1-SNAPSHOT
+	 * @param urlDownloads the urlDownloads to set
+	 */
+	public void setUrlDownloads(String urlDownloads)
+	{
+		this.urlDownloads = urlDownloads;
+	}
+	
+	/**
+	 * @author Alejandro Vivas
+	 * @version 18/08/2017 0.0.1-SNAPSHOT
+	 * @since 18/08/2017 0.0.1-SNAPSHOT
+	 * @return the urlDownloads
+	 */
+	public String getUrlDownloads()
+	{
+		return urlDownloads;
+	}
+	
+	/**
+	 * @author Alejandro Vivas
+	 * @version 18/08/2017 0.0.1-SNAPSHOT
+	 * @since 18/08/2017 0.0.1-SNAPSHOT
+	 * @param pathDownloads the pathDownloads to set
+	 */
+	public void setPathDownloads(String pathDownloads)
+	{
+		this.pathDownloads = pathDownloads;
+	}
+	
+	/**
+	 * @author Alejandro Vivas
+	 * @version 18/08/2017 0.0.1-SNAPSHOT
+	 * @since 18/08/2017 0.0.1-SNAPSHOT
+	 * @return the pathDownloads
+	 */
+	public String getPathDownloads()
+	{
+		return pathDownloads;
 	}
 }

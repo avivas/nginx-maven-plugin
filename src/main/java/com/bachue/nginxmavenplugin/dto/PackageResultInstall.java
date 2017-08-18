@@ -23,7 +23,7 @@ package com.bachue.nginxmavenplugin.dto;
 /**
  * Package data to install
  * @author Alejandro Vivas
- * @version 17/08/2017 0.0.1-SNAPSHOT
+ * @version 18/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
 public class PackageResultInstall
@@ -36,6 +36,7 @@ public class PackageResultInstall
 	private Throwable	throwable;
 	/** Executable path */
 	private String		executablePath;
+	/** Package name */
 	private String		name;
 
 	/**

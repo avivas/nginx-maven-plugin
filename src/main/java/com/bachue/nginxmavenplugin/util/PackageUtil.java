@@ -22,7 +22,6 @@ package com.bachue.nginxmavenplugin.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -31,10 +30,10 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.logging.Log;
 import org.codehaus.plexus.util.StringUtils;
 
-import com.bachue.nginxmavenplugin.dto.PackageInstall;
-import com.bachue.nginxmavenplugin.dto.PackageType;
 import com.bachue.nginxmavenplugin.dto.OsType;
 import com.bachue.nginxmavenplugin.dto.Package;
+import com.bachue.nginxmavenplugin.dto.PackageInstall;
+import com.bachue.nginxmavenplugin.dto.PackageType;
 
 /**
  * Util download nginx
@@ -65,7 +64,7 @@ public final class PackageUtil
 	 * @param disableValidationCertificates Disable validation certificates
 	 * @return Object with status to install
 	 */
-	public static PackageInstall install(final ArtifactRepository localRepository, final String version, boolean disableValidationCertificates, final Log logger)
+	public static PackageInstall install(final ArtifactRepository localRepository, final String version, boolean disableValidationCertificates, final Log logger) throws PackageInstallException
 	{
 		try
 		{
@@ -120,44 +119,15 @@ public final class PackageUtil
 				return new PackageInstall(nginxHome, nginxExecutablePath, true, null,null);
 			}
 
-			// Install TODO
+			// Install package
 			install(osPackageVersion, localRepository, disableValidationCertificates, logger);
-			// Install TODO
 
 			PackageInstall nginxInstall = new PackageInstall(nginxHome, nginxExecutablePath, true, null,null);
 			return nginxInstall;
 		}
-		catch (MalformedURLException malformedURLException)
+		catch (Exception exception)
 		{
-			return new PackageInstall(null, null, false, malformedURLException,null);
-		}
-		catch (IOException ioException)
-		{
-			return new PackageInstall(null, null, false, ioException,null);
-		}
-		catch (PackageException e)
-		{
-			return new PackageInstall(null, null, false, e,null);
-		}
-		catch (KeyManagementException e)
-		{
-			return new PackageInstall(null, null, false, e,null);
-		}
-		catch (NoSuchAlgorithmException e)
-		{
-			return new PackageInstall(null, null, false, e,null);
-		}
-		catch (InterruptedException e)
-		{
-			return new PackageInstall(null, null, false, e,null);
-		}
-		catch (DownloadPackageException e)
-		{
-			return new PackageInstall(null, null, false, e,null);
-		}
-		catch (UnsupportedCompressFileException e)
-		{
-			return new PackageInstall(null, null, false, e,null);
+			throw new PackageInstallException("Error to install package", exception);
 		}
 	}
 
@@ -211,9 +181,11 @@ public final class PackageUtil
 
 		if (!new File(packageLocalFileName).exists() || !new File(checkPackageLocalFileName).exists() || !checkSum(packageLocalFileName, checkPackageLocalFileName))
 		{
+			logger.info("Download file:[" + downloadPackageUrl + "]");
 			DownloadUtil.dowloadFile(packageLocalFileName, downloadPackageUrl, disableValidationCertificates);
 			if (downloadCheckfileUrl != null)
 			{
+				logger.info("Download file:[" + downloadCheckfileUrl + "]");
 				DownloadUtil.dowloadFile(checkPackageLocalFileName, downloadCheckfileUrl, disableValidationCertificates);
 			}
 
@@ -255,7 +227,7 @@ public final class PackageUtil
 			execConfigureNginx = ArrayUtil.concat(execConfigureNginx, options);
 
 			RunProcessUtil.run(execConfigureNginx, sourceHome, logger);
-			RunProcessUtil.run(new String[] { "make", "install", "-d" }, sourceHome, logger);
+			RunProcessUtil.run(new String[] { "make", "install" }, sourceHome, logger);
 			
 			return  new PackageInstall(installHome, null, true, null,package1.getName());
 		}

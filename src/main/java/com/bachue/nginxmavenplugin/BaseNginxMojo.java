@@ -30,6 +30,7 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 
 import com.bachue.nginxmavenplugin.dto.PackageInstall;
+import com.bachue.nginxmavenplugin.util.PackageInstallException;
 import com.bachue.nginxmavenplugin.util.PackageUtil;
 import com.bachue.nginxmavenplugin.util.RunProcessUtil;
 
@@ -73,7 +74,17 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	public void execute() throws MojoExecutionException
 	{
 		// Install nginx
-		PackageInstall nginxInstall = PackageUtil.install(this.localRepository,getNginxVersion(),isDisableValidationCertificates(), getLog());		
+		PackageInstall nginxInstall;
+		try
+		{
+			nginxInstall = PackageUtil.install(this.localRepository,getNginxVersion(),isDisableValidationCertificates(), getLog());
+		} 
+		catch (PackageInstallException e1)
+		{
+			getLog().error("Error to install nginx",e1);
+			throw new MojoExecutionException("", e1);
+		}
+		
 		if(!nginxInstall.isSuccess())
 		{
 			getLog().error("Error to install nginx",nginxInstall.getThrowable());

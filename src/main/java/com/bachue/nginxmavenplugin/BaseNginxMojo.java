@@ -29,14 +29,14 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.StringUtils;
 
+import com.bachue.nginxmavenplugin.dto.PackageInstall;
 import com.bachue.nginxmavenplugin.util.PackageUtil;
 import com.bachue.nginxmavenplugin.util.RunProcessUtil;
-import com.bachue.nginxmavenplugin.util.PackageUtil.NginxInstall;
 
 /**
  * Base Mojo class
  * @author Alejandro Vivas
- * @version 15/08/2017 0.0.1-SNAPSHOT
+ * @version 17/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
 public abstract class BaseNginxMojo extends AbstractMojo
@@ -67,13 +67,13 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	/**
 	 * Execute nginx
 	 * @author Alejandro Vivas
-	 * @version 15/08/2017 0.0.1-SNAPSHOT
+	 * @version 17/08/2017 0.0.1-SNAPSHOT
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 */
 	public void execute() throws MojoExecutionException
 	{
 		// Install nginx
-		NginxInstall nginxInstall = PackageUtil.install(this.localRepository,getNginxVersion(),isDisableValidationCertificates(), getLog());		
+		PackageInstall nginxInstall = PackageUtil.install(this.localRepository,getNginxVersion(),isDisableValidationCertificates(), getLog());		
 		if(!nginxInstall.isSuccess())
 		{
 			getLog().error("Error to install nginx",nginxInstall.getThrowable());
@@ -103,11 +103,11 @@ public abstract class BaseNginxMojo extends AbstractMojo
 			String signal = getNginxSignal();
 			if(signal == null)
 			{
-				args = new String[]{nginxInstall.getNginxExecutablePath(),"-p",getNginxPrefixPath(),"-c",getNginxConfigurationFile()};
+				args = new String[]{nginxInstall.getExecutablePath(),"-p",getNginxPrefixPath(),"-c",getNginxConfigurationFile()};
 			}
 			else
 			{
-				args = new String[]{nginxInstall.getNginxExecutablePath(),"-p",getNginxPrefixPath(),"-c",getNginxConfigurationFile(),"-s",signal};
+				args = new String[]{nginxInstall.getExecutablePath(),"-p",getNginxPrefixPath(),"-c",getNginxConfigurationFile(),"-s",signal};
 			}
 			
 			getLog().info("Nginx Command:[" +  StringUtils.join(args," ") + "]");

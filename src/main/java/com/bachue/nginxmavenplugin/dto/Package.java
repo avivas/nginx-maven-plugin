@@ -314,6 +314,7 @@ public class Package
 			stringBuilder.append("\n   Start Dependencies\n");
 			for (Package package1 : this.dependencies)
 			{
+				stringBuilder.append("\n");
 				stringBuilder.append(package1.toString());
 			}
 			stringBuilder.append("\n   End Dependencies");

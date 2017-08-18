@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.bachue.nginxmavenplugin.util;
 
 /*-
@@ -23,29 +20,30 @@ package com.bachue.nginxmavenplugin.util;
  * #L%
  */
 
-import java.util.Arrays;
-
 /**
- * Class with array utils
+ * Exception to download
  * @author Alejandro Vivas
  * @version 17/08/2017 0.0.1-SNAPSHOT
  * @since 17/08/2017 0.0.1-SNAPSHOT
  */
-public class ArrayUtil
+public class DownloadPackageException extends Exception
 {
 	/**
-	 * concat to arrays. 
+	 * @author Alejandro Vivas 
+	 * @version 17/08/2017 0.0.1-SNAPSHOT
+	 * @since 17/08/2017 0.0.1-SNAPSHOT
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Constructs a new exception with message
+	 * @param message Message about exception
 	 * @author Alejandro Vivas
 	 * @version 17/08/2017 0.0.1-SNAPSHOT
 	 * @since 17/08/2017 0.0.1-SNAPSHOT
-	 * @param first First array
-	 * @param second Second array
-	 * @return concat array
 	 */
-	public static <T> T[] concat(T[] first, T[] second)
+	public DownloadPackageException(String message)
 	{
-		T[] result = Arrays.copyOf(first, first.length + second.length);
-		System.arraycopy(second, 0, result, first.length, second.length);
-		return result;
+		super(message);
 	}
 }

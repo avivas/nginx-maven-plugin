@@ -32,7 +32,7 @@ import org.codehaus.plexus.util.StringUtils;
 
 import com.bachue.nginxmavenplugin.dto.OsType;
 import com.bachue.nginxmavenplugin.dto.Package;
-import com.bachue.nginxmavenplugin.dto.PackageInstall;
+import com.bachue.nginxmavenplugin.dto.PackageResultInstall;
 import com.bachue.nginxmavenplugin.dto.PackageType;
 
 /**
@@ -41,16 +41,23 @@ import com.bachue.nginxmavenplugin.dto.PackageType;
  * @version 17/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
-public final class PackageUtil
+public final class PackageInstall
 {
+	/** Maven local repository */
+	private final ArtifactRepository localRepository;
+	/** Maven logger */
+	private final Log logger;
+	
 	/**
 	 * Private constructor to avoid instances
 	 * @author Alejandro Vivas
 	 * @version 14/08/2017 0.0.1-SNAPSHOT
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 */
-	private PackageUtil()
+	public PackageInstall(final ArtifactRepository localRepository,final Log logger)
 	{
+		this.localRepository = localRepository;
+		this.logger = logger;
 	}
 
 	/**
@@ -60,11 +67,11 @@ public final class PackageUtil
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 * @param localRepository Object to get repository
 	 * @param version Nginx version
-	 * @param logger maven logger
+	 * @param logger Maven logger
 	 * @param disableValidationCertificates Disable validation certificates
 	 * @return Object with status to install
 	 */
-	public static PackageInstall install(final ArtifactRepository localRepository, final String version, boolean disableValidationCertificates, final Log logger) throws PackageInstallException
+	public PackageResultInstall install(final String version, boolean disableValidationCertificates) throws PackageInstallException
 	{
 		try
 		{
@@ -116,13 +123,13 @@ public final class PackageUtil
 			// Verified before download nginx
 			if (new File(nginxExecutablePath).exists())
 			{
-				return new PackageInstall(nginxHome, nginxExecutablePath, true, null,null);
+				return new PackageResultInstall(nginxHome, nginxExecutablePath, true, null,null);
 			}
 
 			// Install package
-			install(osPackageVersion, localRepository, disableValidationCertificates, logger);
+			install(osPackageVersion, disableValidationCertificates);
 
-			PackageInstall nginxInstall = new PackageInstall(nginxHome, nginxExecutablePath, true, null,null);
+			PackageResultInstall nginxInstall = new PackageResultInstall(nginxHome, nginxExecutablePath, true, null,null);
 			return nginxInstall;
 		}
 		catch (Exception exception)
@@ -148,21 +155,21 @@ public final class PackageUtil
 	 * @throws UnsupportedCompressFileException If file format is unsupported
 	 * @throws InterruptedException If fail to run nginx
 	 */
-	private static PackageInstall install(Package package1, final ArtifactRepository localRepository, boolean disableValidationCertificates, final Log logger)
+	private PackageResultInstall install(Package package1, boolean disableValidationCertificates)
 	        throws KeyManagementException, NoSuchAlgorithmException, IOException, DownloadPackageException, UnsupportedCompressFileException, InterruptedException
 	{
-		PackageInstall[] packageInstallDependencies = null;
+		PackageResultInstall[] packageInstallDependencies = null;
 		if (package1.getDependencies() != null)
 		{
-			packageInstallDependencies = new PackageInstall[package1.getDependencies().length];
+			packageInstallDependencies = new PackageResultInstall[package1.getDependencies().length];
 			for (int i = 0; i < package1.getDependencies().length; i++)
 			{
 				Package dependency = package1.getDependencies()[i];
-				packageInstallDependencies[i] = install(dependency, localRepository, disableValidationCertificates, logger);
+				packageInstallDependencies[i] = this.install(dependency, disableValidationCertificates);
 			}
 		}
 
-		URL urlLocalRepository = new URL(localRepository.getUrl());
+		URL urlLocalRepository = new URL(this.localRepository.getUrl());
 		File fileRepository = new File(urlLocalRepository.getFile());
 		String pluginHome = fileRepository.toPath() + File.separator + "com" + File.separator + "bachue" + File.separator + "nginx-maven-plugin" + File.separator;
 		String cacheHome = pluginHome + "cache" + File.separator;
@@ -202,7 +209,7 @@ public final class PackageUtil
 		{
 			case BINARY:
 				uncompressFile(packageLocalFileName, cacheHome, logger);
-				return new PackageInstall(installHome, null, true, null,package1.getName());
+				return new PackageResultInstall(installHome, null, true, null,package1.getName());
 
 			case SOURCE:
 				uncompressFile(packageLocalFileName, sourceDirectory, logger);
@@ -213,7 +220,7 @@ public final class PackageUtil
 		if (package1.getName().equals("nginx") && package1.getPackageType().equals(PackageType.SOURCE))
 		{
 			StringBuilder stringOptionsBuilder = new StringBuilder();
-			for (PackageInstall dependency : packageInstallDependencies)
+			for (PackageResultInstall dependency : packageInstallDependencies)
 			{
 				stringOptionsBuilder.append("--with-");
 				stringOptionsBuilder.append(dependency.getName());
@@ -229,11 +236,11 @@ public final class PackageUtil
 			RunProcessUtil.run(execConfigureNginx, sourceHome, logger);
 			RunProcessUtil.run(new String[] { "make", "install" }, sourceHome, logger);
 			
-			return  new PackageInstall(installHome, null, true, null,package1.getName());
+			return  new PackageResultInstall(installHome, null, true, null,package1.getName());
 		}
 		else
 		{
-			PackageInstall packageInstall = new PackageInstall(sourceHome, null, true, null,package1.getName());
+			PackageResultInstall packageInstall = new PackageResultInstall(sourceHome, null, true, null,package1.getName());
 			return packageInstall;
 		}
 	}

@@ -26,7 +26,7 @@ package com.bachue.nginxmavenplugin.dto;
  * @version 17/08/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
-public class PackageInstall
+public class PackageResultInstall
 {
 	/** Nginx home */
 	private String		home;
@@ -48,7 +48,7 @@ public class PackageInstall
 	 * @param success true if success install, false otherwise
 	 * @param throwable Exception error
 	 */
-	public PackageInstall(String home, String executablePath, boolean success, Throwable throwable,String name)
+	public PackageResultInstall(String home, String executablePath, boolean success, Throwable throwable,String name)
 	{
 		this.home = home;
 		this.success = success;

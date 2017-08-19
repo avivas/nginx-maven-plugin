@@ -70,11 +70,11 @@ public class RunProcessUtil
 
 		logger.info("Standar Output:" + args[0]);
 		InputStream inputStream = process.getInputStream();
-		printInputStreamToLog(inputStream, logger);
+		printInputStreamToLog(inputStream, logger,true);
 
 		logger.info("Error Output:" + args[0]);
 		InputStream errorInputStream = process.getErrorStream();
-		printInputStreamToLog(errorInputStream, logger);
+		printInputStreamToLog(errorInputStream, logger,false);
 
 		int exitValue = process.waitFor();
 		logger.info("Exit value:[" + exitValue + "] to exec:[" + StringUtils.join(args, " ") + "]");
@@ -91,7 +91,7 @@ public class RunProcessUtil
 	 * @param logger Logger to print
 	 * @throws IOException If fail to print
 	 */
-	private static void printInputStreamToLog(final InputStream inputStream, final Log logger) throws IOException
+	private static void printInputStreamToLog(final InputStream inputStream, final Log logger,boolean info) throws IOException
 	{
 		int c;
 		StringBuilder stringBuilder = new StringBuilder();
@@ -100,7 +100,14 @@ public class RunProcessUtil
 			char caracter = (char) c;
 			if (caracter == '\n')
 			{
-				logger.info(stringBuilder.toString());
+				if(info)
+				{
+					logger.info(stringBuilder.toString());
+				}
+				else
+				{
+					logger.error(stringBuilder.toString());
+				}
 				stringBuilder = new StringBuilder();
 			}
 			else

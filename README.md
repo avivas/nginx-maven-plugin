@@ -47,7 +47,7 @@ Add plugin to build section:
 ### Configuration
 
 Goal | Description | Default value
------------- | -------------|-------------|-------------
+------------ | -------------|-------------
 nginxVersion | Define nginx version| latest
 nginxConfigurationFile | Path to nginx configuration file (nginx.conf)|  
 nginxPrefixPath | nginx prefix path | 

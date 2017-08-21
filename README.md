@@ -62,7 +62,7 @@ useLocalNginx | True if you want to use local nginx | false
 
 Run nginx version 1.13.4 using nginx.conf file.
 
-```
+```xml
 <build>
   <plugins>
     <plugin>

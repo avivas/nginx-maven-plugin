@@ -235,7 +235,7 @@ public final class PackageInstall
 				stringOptionsBuilder.append(" ");
 			}
 
-			String[] execConfigureNginx = new String[] { "." + File.separator + "configure", "--prefix=" + installHome };
+			String[] execConfigureNginx = new String[] { "." + File.separator + "configure", "--prefix=" + installHome,"--with-poll_module","--with-threads","--with-file-aio","--with-http_ssl_module","--with-http_v2_module","--with-http_realip_module","--with-http_addition_module","--with-http_xslt_module","--with-http_sub_module","--with-http_dav_module","--with-http_flv_module","--with-http_mp4_module","--with-http_gunzip_module","--with-http_gzip_static_module","--with-http_auth_request_module","--with-http_random_index_module","--with-http_secure_link_module","--with-http_degradation_module","--with-http_slice_module","--with-http_stub_status_module","--with-mail","--with-mail_ssl_module","--with-stream","--with-stream_ssl_module","--with-stream_realip_module"};
 			String[] options = stringOptionsBuilder.toString().split(" ");
 			execConfigureNginx = ArrayUtil.concat(execConfigureNginx, options);
 
@@ -338,11 +338,28 @@ public final class PackageInstall
 
 		String homeApp = pathConfigureFile;
 
-		pathConfigureFile += File.separator + "configure";
+		if(downloadUrl.toLowerCase().contains("openssl"))
+		{
+			String pathConfigureFile1 = pathConfigureFile + File.separator + "Configure";
 
-		String[] execPermissionConfigureNginx = new String[] { "chmod", "u+x", pathConfigureFile };
-		logger.info("Exec:[" + StringUtils.join(execPermissionConfigureNginx, " ") + "]");
-		RunProcessUtil.run(execPermissionConfigureNginx);
+			String[] execPermissionConfigureNginx = new String[] { "chmod", "u+x", pathConfigureFile1 };
+			logger.info("Exec:[" + StringUtils.join(execPermissionConfigureNginx, " ") + "]");
+			RunProcessUtil.run(execPermissionConfigureNginx);
+			
+			String pathConfigureFile2 = pathConfigureFile + File.separator + "config";
+
+			execPermissionConfigureNginx = new String[] { "chmod", "u+x", pathConfigureFile2 };
+			logger.info("Exec:[" + StringUtils.join(execPermissionConfigureNginx, " ") + "]");
+			RunProcessUtil.run(execPermissionConfigureNginx);
+		}
+		else
+		{
+			pathConfigureFile += File.separator + "configure";
+
+			String[] execPermissionConfigureNginx = new String[] { "chmod", "u+x", pathConfigureFile };
+			logger.info("Exec:[" + StringUtils.join(execPermissionConfigureNginx, " ") + "]");
+			RunProcessUtil.run(execPermissionConfigureNginx);
+		}
 
 		return homeApp;
 	}

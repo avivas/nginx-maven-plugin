@@ -52,27 +52,26 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	/** Nginx version to use  */
 	@Parameter(property = "nginxVersion",defaultValue = "latest")
     private String nginxVersion;
+	
 	/** Nginx configuration file */
 	@Parameter(property = "nginxConfigurationFile")
     private String nginxConfigurationFile;
+	
 	/** Nginx prefix path */
 	@Parameter(property = "nginxPrefixPath")
     private String nginxPrefixPath;
+	
 	/** Disable validation certificates in https downloads*/
 	@Parameter(property = "disableValidationCertificates", defaultValue = "true")
 	private boolean disableValidationCertificates;
+	
 	/** Url to downloads.json file */
 	@Parameter(property = "urlDownloads", defaultValue = "https://raw.githubusercontent.com/avivas/nginx-maven-plugin/master/src/main/resources/downloads.json")
 	private String urlDownloads;
+	
 	/** Path to downloads.json file */
 	@Parameter(property = "pathDownloads")
 	private String pathDownloads;
-	/** Path to nginx executable */
-	@Parameter(property = "nginxExecutablePath")
-	private String nginxExecutablePath;
-	/** True if use a local nginx */
-	@Parameter(property = "useLocalNginx", defaultValue = "false")
-	private boolean useLocalNginx;
 	
 	/**
 	 * Execute nginx
@@ -84,30 +83,15 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	{
 		// Install nginx
 		PackageResultInstall nginxInstall;
-		if(isUseLocalNginx())
+		try
 		{
-			if( (getNginxPrefixPath() == null) || (getNginxExecutablePath() == null) )
-			{
-				throw new MojoExecutionException("nginxExecutable or nginxPrefixPath null");
-			}
-			nginxInstall = new PackageResultInstall(getNginxPrefixPath(), getNginxExecutablePath(), true, null, "nginx");
-		}
-		else
+			PackageInstall packageInstall = new PackageInstall(localRepository, getLog(),getUrlDownloads(),getPathDownloads());
+			nginxInstall = packageInstall.install(getNginxVersion(),isDisableValidationCertificates());
+		} 
+		catch (PackageInstallException e1)
 		{
-			try
-			{
-				PackageInstall packageInstall = new PackageInstall(localRepository, getLog(),getUrlDownloads(),getPathDownloads());
-				nginxInstall = packageInstall.install(getNginxVersion(),isDisableValidationCertificates());	
-				if(getNginxExecutablePath() == null)
-				{
-					setNginxExecutablePath(nginxInstall.getExecutablePath());
-				}
-			} 
-			catch (PackageInstallException e1)
-			{
-				getLog().error("Error to install nginx",e1);
-				throw new MojoExecutionException("Error to install nginx", e1);
-			}
+			getLog().error("Error to install nginx",e1);
+			throw new MojoExecutionException("", e1);
 		}
 		
 		// Set default values
@@ -136,11 +120,11 @@ public abstract class BaseNginxMojo extends AbstractMojo
 			String signal = getNginxSignal();
 			if(signal == null)
 			{
-				args = new String[]{getNginxExecutablePath(),"-p",getNginxPrefixPath(),"-c",getNginxConfigurationFile()};
+				args = new String[]{nginxInstall.getExecutablePath(),"-p",getNginxPrefixPath(),"-c",getNginxConfigurationFile()};
 			}
 			else
 			{
-				args = new String[]{getNginxExecutablePath(),"-p",getNginxPrefixPath(),"-c",getNginxConfigurationFile(),"-s",signal};
+				args = new String[]{nginxInstall.getExecutablePath(),"-p",getNginxPrefixPath(),"-c",getNginxConfigurationFile(),"-s",signal};
 			}
 			
 			getLog().info("Nginx Command:[" +  StringUtils.join(args," ") + "]");
@@ -336,49 +320,5 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	public String getPathDownloads()
 	{
 		return pathDownloads;
-	}
-	
-	/**
-	 * @author Alejandro Vivas
-	 * @version 18/08/2017 0.0.1-SNAPSHOT
-	 * @since 18/08/2017 0.0.1-SNAPSHOT
-	 * @param nginxExecutablePath the nginxExecutablePath to set
-	 */
-	public void setNginxExecutablePath(String nginxExecutablePath)
-	{
-		this.nginxExecutablePath = nginxExecutablePath;
-	}
-	
-	/**
-	 * @author Alejandro Vivas
-	 * @version 18/08/2017 0.0.1-SNAPSHOT
-	 * @since 18/08/2017 0.0.1-SNAPSHOT
-	 * @return the nginxExecutablePath
-	 */
-	public String getNginxExecutablePath()
-	{
-		return nginxExecutablePath;
-	}
-	
-	/**
-	 * @author Alejandro Vivas
-	 * @version 18/08/2017 0.0.1-SNAPSHOT
-	 * @since 18/08/2017 0.0.1-SNAPSHOT
-	 * @param useLocalNginx the useLocalNginx to set
-	 */
-	public void setUseLocalNginx(boolean useLocalNginx)
-	{
-		this.useLocalNginx = useLocalNginx;
-	}
-	
-	/**
-	 * @author Alejandro Vivas
-	 * @version 18/08/2017 0.0.1-SNAPSHOT
-	 * @since 18/08/2017 0.0.1-SNAPSHOT
-	 * @return the useLocalNginx
-	 */
-	public boolean isUseLocalNginx()
-	{
-		return useLocalNginx;
 	}
 }

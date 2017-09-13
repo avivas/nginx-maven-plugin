@@ -37,7 +37,7 @@ import com.bachue.nginxmavenplugin.util.RunProcessUtil;
 /**
  * Base Mojo class
  * @author Alejandro Vivas
- * @version 18/08/2017 0.0.1-SNAPSHOT
+ * @version 12/09/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
 public abstract class BaseNginxMojo extends AbstractMojo
@@ -77,7 +77,7 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	/**
 	 * Execute nginx
 	 * @author Alejandro Vivas
-	 * @version 18/08/2017 0.0.1-SNAPSHOT
+	 * @version 12/09/2017 0.0.1-SNAPSHOT
 	 * @since 14/08/2017 0.0.1-SNAPSHOT
 	 */
 	public void execute() throws MojoExecutionException
@@ -117,6 +117,9 @@ public abstract class BaseNginxMojo extends AbstractMojo
 		}
 		getLog().info("Nginx Prefix:[" + getNginxPrefixPath() + "]");
 		
+		// Create nginx prefix folder if there is no exist 
+		createNginxPrefixDirectory();		
+		
 		if(	getNginxConfigurationFile() == null	)
 		{
 			setNginxConfigurationFile(getNginxPrefixPath() + File.separator + "conf" + File.separator + "nginx.conf"); 
@@ -148,6 +151,50 @@ public abstract class BaseNginxMojo extends AbstractMojo
 		{
 			getLog().error("Error to run nginx", e);
 		}		
+	}
+	
+	/**
+	 * Create nginx prefix directory
+	 * @author Alejandro Vivas
+	 * @version 12/09/2017 0.0.1-SNAPSHOT
+	 * @since 12/09/2017 0.0.1-SNAPSHOT
+	 * @throws MojoExecutionException If fail to create nginx prefix directory
+	 */
+	private void createNginxPrefixDirectory() throws MojoExecutionException
+	{
+		// Create nginx prefix directory
+		File fileNginxPrefixPath = new File(getNginxPrefixPath());
+		if( !fileNginxPrefixPath.exists() )
+		{
+			getLog().warn("nginx prefix path [" + getNginxPrefixPath()  + "] doesn't exist");
+			try
+			{
+				fileNginxPrefixPath.mkdirs();
+			}
+			catch(SecurityException securityException)
+			{
+				String message = "Error to create nginx prefix path:[" + getNginxPrefixPath() + "]";
+				getLog().error(message,securityException);
+				throw new MojoExecutionException("Error to install nginx", securityException);
+			}
+		}
+		
+		// Create folder to logs in nginx prefix directory
+		File fileNginxPrefixPathLogs = new File(getNginxPrefixPath() + File.separator + "logs");
+		if( !fileNginxPrefixPathLogs.exists() )
+		{
+			getLog().warn("nginx prefix logs path [" +fileNginxPrefixPathLogs.getAbsolutePath()  + "] doesn't exist");
+			try
+			{
+				fileNginxPrefixPathLogs.mkdirs();
+			}
+			catch(SecurityException securityException)
+			{
+				String message = "Error to create nginx logs prefix path:[" + getNginxPrefixPath() + "]";
+				getLog().error(message,securityException);
+				throw new MojoExecutionException(message, securityException);
+			}
+		}
 	}
 	
 	/**

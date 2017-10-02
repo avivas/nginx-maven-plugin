@@ -37,7 +37,7 @@ import com.bachue.nginxmavenplugin.util.RunProcessUtil;
 /**
  * Base Mojo class
  * @author Alejandro Vivas
- * @version 12/09/2017 0.0.1-SNAPSHOT
+ * @version 2/10/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
 public abstract class BaseNginxMojo extends AbstractMojo
@@ -81,6 +81,7 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	 */
 	public void execute() throws MojoExecutionException
 	{
+		normalizePaths();
 		// Install nginx
 		PackageResultInstall nginxInstall;
 		try
@@ -135,6 +136,24 @@ public abstract class BaseNginxMojo extends AbstractMojo
 		{
 			getLog().error("Error to run nginx", e);
 		}		
+	}
+	
+	/**
+	 * Normalize paths (use OS file separator) to avoid problems to run nginx
+	 * @author Alejandro Vivas
+	 * @version 2/10/2017 0.0.1-SNAPSHOT
+	 * @since 2/10/2017 0.0.1-SNAPSHOT
+	 */
+	private void normalizePaths()
+	{
+		if( getNginxPrefixPath() != null)
+		{
+			setNginxPrefixPath( getNginxPrefixPath().replace('/', File.separatorChar)  );
+		}
+		if( (getNginxConfigurationFile() != null) )
+		{
+			setNginxConfigurationFile(getNginxConfigurationFile().replace('/', File.separatorChar));
+		}
 	}
 	
 	/**

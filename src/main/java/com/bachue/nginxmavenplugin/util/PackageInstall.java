@@ -22,13 +22,16 @@ package com.bachue.nginxmavenplugin.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
+import org.apache.commons.io.FileSystemUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.util.StringUtils;
 
 import com.bachue.nginxmavenplugin.dto.OsType;
 import com.bachue.nginxmavenplugin.dto.Package;
@@ -164,17 +167,6 @@ public final class PackageInstall
 	private PackageResultInstall install(Package package1, boolean disableValidationCertificates)
 	        throws KeyManagementException, NoSuchAlgorithmException, IOException, DownloadPackageException, UnsupportedCompressFileException, InterruptedException
 	{
-		PackageResultInstall[] packageInstallDependencies = null;
-		if (package1.getDependencies() != null)
-		{
-			packageInstallDependencies = new PackageResultInstall[package1.getDependencies().length];
-			for (int i = 0; i < package1.getDependencies().length; i++)
-			{
-				Package dependency = package1.getDependencies()[i];
-				packageInstallDependencies[i] = this.install(dependency, disableValidationCertificates);
-			}
-		}
-
 		URL urlLocalRepository = new URL(this.localRepository.getUrl());
 		File fileRepository = new File(urlLocalRepository.getFile());
 		String pluginHome = fileRepository.toPath() + File.separator + "com" + File.separator + "bachue" + File.separator + "nginx-maven-plugin" + File.separator;
@@ -183,72 +175,70 @@ public final class PackageInstall
 
 		// Download package and checksum
 		String downloadPackageUrl = package1.getDownloadUrl();
-		String downloadCheckfileUrl = package1.getAscCheckfileUrl() == null ? package1.getSigCheckfileUrl() : package1.getAscCheckfileUrl();
-
 		String packageLocalFileName = cacheHome + downloadPackageUrl.substring(downloadPackageUrl.lastIndexOf("/") + 1);
-		String checkPackageLocalFileName = null;
-		if (downloadCheckfileUrl != null)
-		{
-			checkPackageLocalFileName = cacheHome + downloadCheckfileUrl.substring(downloadCheckfileUrl.lastIndexOf("/") + 1);
-		}
-
-		if (!new File(packageLocalFileName).exists() || !new File(checkPackageLocalFileName).exists() || !checkSum(packageLocalFileName, checkPackageLocalFileName))
-		{
-			logger.info("Download file:[" + downloadPackageUrl + "]");
-			DownloadUtil.dowloadFile(packageLocalFileName, downloadPackageUrl, disableValidationCertificates);
-			if (downloadCheckfileUrl != null)
-			{
-				logger.info("Download file:[" + downloadCheckfileUrl + "]");
-				DownloadUtil.dowloadFile(checkPackageLocalFileName, downloadCheckfileUrl, disableValidationCertificates);
-			}
-
-			if (!checkSum(packageLocalFileName, checkPackageLocalFileName))
-			{
-				throw new DownloadPackageException("Checksum[" + checkPackageLocalFileName + "] or file [" + packageLocalFileName + "] invalid");
-			}
-		}
-
+		
 		// Uncompress package
 		String installHome = cacheHome + File.separator +  getSimpleNameWithoutExtension(downloadPackageUrl);
+				
+		if(package1.getPackageType().equals(PackageType.BINARY))
+		{
+			uncompressFile(packageLocalFileName, cacheHome, logger);
+			return new PackageResultInstall(installHome, null, true, null,package1.getName());
+		}
+		
+		String installScriptPath = cacheHome + "install-nginx.sh";
+		File targetFile = new File(installScriptPath);
+		if(!targetFile.exists())
+		{
+			InputStream installScriptInputStream = PackageConfiguration.class.getClassLoader().getResourceAsStream("install-nginx.sh");
+	    	FileUtils.copyInputStreamToFile(installScriptInputStream, targetFile);
+	    	RunProcessUtil.run(new String[] {"chmod","u+x",installScriptPath});
+		}		
+		
+		StringBuilder stringOptionsBuilder = new StringBuilder();
+		stringOptionsBuilder.append(installScriptPath);//("/home/oracle/git/nginx-maven-plugin/src/main/resources/install-nginx.sh");
+		stringOptionsBuilder.append(" ");
+		
+		// TODO util to define simple name
 		String sourceHome =  sourceDirectory + getSimpleNameWithoutExtension(downloadPackageUrl);
-		switch (package1.getPackageType())
+		
+		for (Package dependency : package1.getDependencies())
 		{
-			case BINARY:
-				uncompressFile(packageLocalFileName, cacheHome, logger);
-				return new PackageResultInstall(installHome, null, true, null,package1.getName());
-
-			case SOURCE:
-				uncompressFile(packageLocalFileName, sourceDirectory, logger);
-				grantExecPermision(sourceDirectory, downloadPackageUrl, logger);
-			break;
-		}
-
-		if (package1.getName().equals("nginx") && package1.getPackageType().equals(PackageType.SOURCE))
-		{
-			StringBuilder stringOptionsBuilder = new StringBuilder();
-			for (PackageResultInstall dependency : packageInstallDependencies)
-			{
-				stringOptionsBuilder.append("--with-");
-				stringOptionsBuilder.append(dependency.getName());
-				stringOptionsBuilder.append("=");
-				stringOptionsBuilder.append(dependency.getHome());
-				stringOptionsBuilder.append(" ");
+			switch( dependency.getName() )
+			{	
+				case "pcre":
+					stringOptionsBuilder.append("--url-pcre=");
+				break;
+				case "zlib":
+					stringOptionsBuilder.append("--url-zlib=");
+				break;
+				case "openssl":
+					stringOptionsBuilder.append("--url-openssl=");
+				break;
+				case "brotli":
+					stringOptionsBuilder.append("--url-brotli=");
+				break;
+				
 			}
-
-			String[] execConfigureNginx = new String[] { "." + File.separator + "configure", "--prefix=" + installHome,"--with-poll_module","--with-threads","--with-file-aio","--with-http_ssl_module","--with-http_v2_module","--with-http_realip_module","--with-http_addition_module","--with-http_xslt_module","--with-http_sub_module","--with-http_dav_module","--with-http_flv_module","--with-http_mp4_module","--with-http_gunzip_module","--with-http_gzip_static_module","--with-http_auth_request_module","--with-http_random_index_module","--with-http_secure_link_module","--with-http_degradation_module","--with-http_slice_module","--with-http_stub_status_module","--with-mail","--with-mail_ssl_module","--with-stream","--with-stream_ssl_module","--with-stream_realip_module"};
-			String[] options = stringOptionsBuilder.toString().split(" ");
-			execConfigureNginx = ArrayUtil.concat(execConfigureNginx, options);
-
-			RunProcessUtil.run(execConfigureNginx, sourceHome, logger);
-			RunProcessUtil.run(new String[] { "make", "install" }, sourceHome, logger);
+			stringOptionsBuilder.append(dependency.getDownloadUrl());
+			stringOptionsBuilder.append(" ");			
+		}
+		
+		stringOptionsBuilder.append("--url-nginx=");
+		stringOptionsBuilder.append(package1.getDownloadUrl());
+		stringOptionsBuilder.append(" ");
+		
+		stringOptionsBuilder.append("--prefix=");
+		stringOptionsBuilder.append(installHome);
+		stringOptionsBuilder.append(" ");
+		
+		stringOptionsBuilder.append("--source-home=");
+		stringOptionsBuilder.append(sourceDirectory);
+		stringOptionsBuilder.append(" ");
+		
+		RunProcessUtil.run(stringOptionsBuilder.toString().split(" "), cacheHome, logger);
 			
-			return  new PackageResultInstall(installHome, null, true, null,package1.getName());
-		}
-		else
-		{
-			PackageResultInstall packageInstall = new PackageResultInstall(sourceHome, null, true, null,package1.getName());
-			return packageInstall;
-		}
+		return  new PackageResultInstall(installHome, null, true, null,package1.getName());		
 	}
 
 	/**
@@ -305,62 +295,5 @@ public final class PackageInstall
 		{
 			throw new UnsupportedCompressFileException("Compress format not supported. File:[" + downloadUrl + "]");
 		}
-	}
-
-	private static boolean checkSum(String file, String fileChecksum)
-	{
-		// TODO
-		return true;
-	}
-
-	/**
-	 * Grant exec permission a configure file
-	 * @author Alejandro Vivas
-	 * @version 17/08/2017 0.0.1-SNAPSHOT
-	 * @since 17/08/2017 0.0.1-SNAPSHOT
-	 * @param sourceDirectory Source directorory
-	 * @param downloadUrl download url file
-	 * @param logger Logger
-	 * @return String with home app
-	 * @throws IOException If fail to grant permission
-	 */
-	private static String grantExecPermision(String sourceDirectory, String downloadUrl, final Log logger) throws IOException
-	{
-		String pathConfigureFile = sourceDirectory;
-		if (downloadUrl.endsWith(".tar.gz"))
-		{
-			pathConfigureFile += downloadUrl.substring(downloadUrl.lastIndexOf('/') + 1, downloadUrl.lastIndexOf(".tar.gz"));
-		}
-		else
-		{
-			pathConfigureFile += downloadUrl.substring(downloadUrl.lastIndexOf('/') + 1, downloadUrl.lastIndexOf(".tgz"));
-		}
-
-		String homeApp = pathConfigureFile;
-
-		if(downloadUrl.toLowerCase().contains("openssl"))
-		{
-			String pathConfigureFile1 = pathConfigureFile + File.separator + "Configure";
-
-			String[] execPermissionConfigureNginx = new String[] { "chmod", "u+x", pathConfigureFile1 };
-			logger.info("Exec:[" + StringUtils.join(execPermissionConfigureNginx, " ") + "]");
-			RunProcessUtil.run(execPermissionConfigureNginx);
-			
-			String pathConfigureFile2 = pathConfigureFile + File.separator + "config";
-
-			execPermissionConfigureNginx = new String[] { "chmod", "u+x", pathConfigureFile2 };
-			logger.info("Exec:[" + StringUtils.join(execPermissionConfigureNginx, " ") + "]");
-			RunProcessUtil.run(execPermissionConfigureNginx);
-		}
-		else
-		{
-			pathConfigureFile += File.separator + "configure";
-
-			String[] execPermissionConfigureNginx = new String[] { "chmod", "u+x", pathConfigureFile };
-			logger.info("Exec:[" + StringUtils.join(execPermissionConfigureNginx, " ") + "]");
-			RunProcessUtil.run(execPermissionConfigureNginx);
-		}
-
-		return homeApp;
 	}
 }

@@ -18,6 +18,44 @@
 	}
 	,{	
 		 "name":"nginx"
+		,"version":"1.13.5"
+		,"latest": true
+		,"osType":"UNIX"
+		,"downloadUrl":"https://nginx.org/download/nginx-1.13.5.tar.gz"
+		,"ascCheckfileUrl":"https://nginx.org/download/nginx-1.13.5.tar.gz.asc"
+		,"packageType":"SOURCE"		
+		,"dependencies":				
+		[						 
+			{
+				 "name":"pcre"						
+				,"downloadUrl":"https://ftp.pcre.org/pub/pcre/pcre-8.41.tar.gz"
+				,"sigCheckfileUrl":"https://ftp.pcre.org/pub/pcre/pcre-8.41.tar.gz.sig"
+				,"packageType":"SOURCE"
+			}
+			,
+			{
+				"name":"zlib"
+				,"downloadUrl":"http://zlib.net/zlib-1.2.11.tar.gz"
+				,"ascCheckfileUrl":"http://zlib.net/zlib-1.2.11.tar.gz.asc"
+				,"packageType":"SOURCE"
+			}
+			,
+			{
+				 "name":"openssl"
+				,"downloadUrl":"https://www.openssl.org/source/openssl-1.0.2k.tar.gz"
+				,"ascCheckfileUrl":"https://www.openssl.org/source/openssl-1.0.2k.tar.gz.asc"
+				,"packageType":"SOURCE"
+			}
+			,
+			{
+				 "name":"brotli"
+				,"downloadUrl":"https://github.com/google/ngx_brotli.git"
+				,"packageType":"SOURCE"
+			}
+		]		
+	}
+	,{	
+		 "name":"nginx"
 		,"version":"1.13.4"
 		,"latest": true
 		,"osType":"UNIX"
@@ -44,6 +82,12 @@
 				 "name":"openssl"
 				,"downloadUrl":"https://www.openssl.org/source/openssl-1.0.2k.tar.gz"
 				,"ascCheckfileUrl":"https://www.openssl.org/source/openssl-1.0.2k.tar.gz.asc"
+				,"packageType":"SOURCE"
+			}
+			,
+			{
+				 "name":"brotli"
+				,"downloadUrl":"https://github.com/google/ngx_brotli.git"
 				,"packageType":"SOURCE"
 			}
 		]		

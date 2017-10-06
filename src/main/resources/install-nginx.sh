@@ -42,24 +42,21 @@ echo "URL_ZLIB = ${URL_ZLIB}"
 echo "URL_BROTLI = ${URL_BROTLI}"
 echo "URL_NGINX = ${URL_NGINX}"
 
-#SOURCE_HOME=/tmp/sources
-#BINARY_HOME=/tmp/programas
-#PREFIX_NGINX=/tmp/programas/nginx-1.13.5
-
 mkdir -p $SOURCE_HOME
 
 # Download openssl
 cd $SOURCE_HOME
 wget -c $URL_OPENSSL
-tar -zxf openssl-1.0.2k.tar.gz
+tar -zxf ${URL_OPENSSL##*/}
+#openssl-1.0.2k.tar.gz
 
 # Download pcre
 wget -c $URL_PCRE
-tar -zxf pcre-8.41.tar.gz
+tar -zxf ${URL_PCRE##*/}
 
 # Download zlib
 wget -c $URL_ZLIB
-tar -zxf zlib-1.2.11.tar.gz
+tar -zxf ${URL_ZLIB##*/}
 
 # Download brotli module
 git clone $URL_BROTLI
@@ -69,8 +66,11 @@ cd $SOURCE_HOME
 
 # Download nginx
 wget -c $URL_NGINX
-tar zxf nginx-1.13.5.tar.gz
-cd nginx-1.13.5
+tar zxf ${URL_NGINX##*/}
+NGINX_PATH_DIRECTORY_=${URL_NGINX%.*}
+NGINX_PATH_DIRECTORY__=${NGINX_PATH_DIRECTORY_%.*}
+NGINX_PATH_DIRECTORY=${NGINX_PATH_DIRECTORY__##*/}
+cd $NGINX_PATH_DIRECTORY
 
 ./configure --prefix=$PREFIX_NGINX \
 	--with-openssl=$SOURCE_HOME/openssl-1.0.2k \

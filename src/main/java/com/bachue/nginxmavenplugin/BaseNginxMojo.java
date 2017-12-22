@@ -37,7 +37,7 @@ import com.bachue.nginxmavenplugin.util.RunProcessUtil;
 /**
  * Base Mojo class
  * @author Alejandro Vivas
- * @version 2/10/2017 0.0.1-SNAPSHOT
+ * @version 22/12/2017 0.0.1-SNAPSHOT
  * @since 14/08/2017 0.0.1-SNAPSHOT
  */
 public abstract class BaseNginxMojo extends AbstractMojo
@@ -159,7 +159,7 @@ public abstract class BaseNginxMojo extends AbstractMojo
 	/**
 	 * Create nginx prefix directory
 	 * @author Alejandro Vivas
-	 * @version 12/09/2017 0.0.1-SNAPSHOT
+	 * @version 22/12/2017 0.0.1-SNAPSHOT
 	 * @since 12/09/2017 0.0.1-SNAPSHOT
 	 * @throws MojoExecutionException If fail to create nginx prefix directory
 	 */
@@ -193,7 +193,24 @@ public abstract class BaseNginxMojo extends AbstractMojo
 			}
 			catch(SecurityException securityException)
 			{
-				String message = "Error to create nginx logs prefix path:[" + getNginxPrefixPath() + "]";
+				String message = "Error to create nginx logs prefix path:[" + fileNginxPrefixPathLogs.getAbsolutePath() + "]";
+				getLog().error(message,securityException);
+				throw new MojoExecutionException(message, securityException);
+			}
+		}
+		
+		// Create folder to temp in nginx prefix directory
+		File fileNginxPrefixPathTemp = new File(getNginxPrefixPath() + File.separator + "temp");
+		if( !fileNginxPrefixPathTemp.exists() )
+		{
+			getLog().warn("nginx prefix temp path [" +fileNginxPrefixPathTemp.getAbsolutePath()  + "] doesn't exist");
+			try
+			{
+				fileNginxPrefixPathTemp.mkdirs();
+			}
+			catch(SecurityException securityException)
+			{
+				String message = "Error to create nginx temp prefix path:[" + fileNginxPrefixPathTemp.getAbsolutePath() + "]";
 				getLog().error(message,securityException);
 				throw new MojoExecutionException(message, securityException);
 			}

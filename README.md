@@ -16,7 +16,7 @@ cd nginx-maven-plugin
 mvn install
 ```
 
-## Pluging goals
+## Plugin goals
 
 Goal | Description
 ------------ | -------------

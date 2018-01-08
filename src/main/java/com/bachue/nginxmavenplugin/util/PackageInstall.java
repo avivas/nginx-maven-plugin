@@ -94,10 +94,10 @@ public final class PackageInstall
 				versionToDownload = urlsDownloadNginx.getLatestVersion();
 			}
 
-			logger.info("Nginx version:[" + versionToDownload + "]");
+			logger.debug("Nginx version:[" + versionToDownload + "]");
 
 			Package osPackageVersion = urlsDownloadNginx.getPackage(versionToDownload);
-			logger.info(osPackageVersion.toString());
+			logger.debug(osPackageVersion.toString());
 
 			String downloadNginxUrl = osPackageVersion.getDownloadUrl();
 
